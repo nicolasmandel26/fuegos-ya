@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fuegos Ya — Logística</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#252525;
+  --border:#2a2a2a;--border2:#333;
+  --text:#f0ede8;--text2:#888;--text3:#555;
+  --accent:#e8470a;--accent2:#ff6b35;
+  --green:#2ecc71;--green2:rgba(46,204,113,0.12);
+  --red:#e74c3c;--red2:rgba(231,76,60,0.12);
+  --amber:#f5a623;--blue:#3498db;
+  --mauro:#e8470a;--maxi:#3498db;--nacho:#8b5cf6;
+  --mono:'DM Mono',monospace;--display:'Bebas Neue',sans-serif;--body:'DM Sans',sans-serif;
+  --r:10px;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;min-height:100vh;}
+
+/* LAYOUT */
+.app{display:grid;grid-template-rows:56px 1fr;height:100vh;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
+.logo{font-family:var(--display);font-size:20px;letter-spacing:2px;color:var(--accent2);}
+.logo span{color:var(--text2);font-size:12px;font-family:var(--body);font-weight:300;letter-spacing:0;margin-left:10px;}
+.main{display:grid;grid-template-columns:200px 1fr;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:16px 0;display:flex;flex-direction:column;gap:2px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);border-left:2px solid transparent;transition:all 0.1s;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--surface2);color:var(--text);border-left-color:var(--accent);}
+.nav-icon{font-size:15px;width:20px;text-align:center;}
+
+/* CONTENT */
+.content{overflow-y:auto;}
+.vista{display:none;padding:20px;}
+.vista.active{display:block;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.page-title{font-family:var(--display);font-size:28px;letter-spacing:1px;}
+.page-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
+
+/* TABS */
+.vista-tabs{display:flex;gap:2px;background:var(--surface2);border-radius:8px;padding:3px;width:fit-content;margin-bottom:20px;}
+.vista-tab{padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);transition:all 0.1s;}
+.vista-tab.active{background:var(--surface);color:var(--text);}
+
+/* POOL */
+.armar-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;}
+.pool-section{grid-column:1/2;}
+.camionetas-section{grid-column:2/5;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.pool-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.pool-title{font-family:var(--display);font-size:18px;letter-spacing:0.5px;}
+.pool-count{font-family:var(--mono);font-size:10px;color:var(--text3);}
+#pool-grid{display:flex;flex-direction:column;gap:4px;}
+
+/* POOL ITEM */
+.pool-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:all 0.1s;cursor:grab;}
+.pool-item:hover{border-color:var(--border2);}
+.pool-item.canal-mayorista{border-left:3px solid var(--accent);}
+.pool-item.canal-particular{border-left:3px solid var(--blue);}
+.pool-item.expanded{border-color:var(--border2);}
+.pi-main{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 10px;}
+.pi-nombre{font-size:13px;font-weight:500;}
+.pi-monto{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--accent2);}
+.pi-kg{font-family:var(--mono);font-size:10px;color:var(--text3);background:var(--surface2);padding:1px 5px;border-radius:3px;}
+.pi-chevron{font-size:10px;color:var(--text3);transition:transform 0.2s;}
+.pool-item.expanded .pi-chevron{transform:rotate(180deg);}
+.pi-expand{display:none;padding:10px;border-top:1px solid var(--border);background:var(--surface2);}
+.pool-item.expanded .pi-expand{display:block;}
+
+/* CAMIONETA */
+.camioneta{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.cam-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.cam-nombre{font-family:var(--display);font-size:18px;letter-spacing:0.5px;}
+.cam-sub{font-size:11px;color:var(--text3);}
+.cam-stats{display:flex;gap:10px;margin-top:3px;}
+.cam-stat{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.cam-body{min-height:80px;padding:8px;transition:background 0.1s;}
+.cam-body.drag-over{background:rgba(232,71,10,0.06);border:1px dashed var(--accent);}
+.cam-empty{text-align:center;padding:20px 10px;color:var(--text3);font-size:12px;}
+.recorrido-item{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ri-nombre{font-size:12px;font-weight:500;}
+.ri-prods{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.ri-monto{font-family:var(--mono);font-size:11px;color:var(--accent2);flex-shrink:0;}
+.btn-cargar{display:none;margin:8px;padding:8px;border-radius:8px;border:none;width:calc(100% - 16px);font-family:var(--display);font-size:14px;letter-spacing:0.5px;cursor:pointer;transition:all 0.1s;}
+.btn-cargar.mauro{background:var(--mauro);color:white;}
+.btn-cargar.maxi{background:var(--maxi);color:white;}
+.btn-cargar.nacho{background:var(--nacho);color:white;}
+
+/* ASSIGN BTNS */
+.assign-btns{display:flex;gap:4px;}
+.assign-btn{padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:10px;font-family:var(--mono);cursor:pointer;font-weight:600;}
+.assign-btn.mauro:hover{background:var(--mauro);color:white;border-color:var(--mauro);}
+.assign-btn.maxi:hover{background:var(--maxi);color:white;border-color:var(--maxi);}
+.assign-btn.nacho:hover{background:var(--nacho);color:white;border-color:var(--nacho);}
+
+/* ZONA FILTERS */
+.zona-filters{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;}
+.zf-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--mono);}
+.zf-btn:hover{color:var(--text);border-color:var(--border2);}
+.zf-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+
+/* CHOFER SELECTOR */
+.chofer-selector{display:flex;gap:8px;margin-bottom:16px;}
+.chofer-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:var(--display);font-size:16px;letter-spacing:0.5px;cursor:pointer;}
+.chofer-btn.mauro.active{background:var(--mauro);color:white;border-color:var(--mauro);}
+.chofer-btn.maxi.active{background:var(--maxi);color:white;border-color:var(--maxi);}
+.chofer-btn.nacho.active{background:var(--nacho);color:white;border-color:var(--nacho);}
+
+/* CARGA CHOFER */
+.carga-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.carga-item.cargado{border-color:var(--green);background:rgba(46,204,113,0.04);}
+.carga-nombre{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.carga-monto{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--accent2);}
+.carga-pago{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px;text-align:right;}
+.carga-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip-prod{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;padding:7px 12px;border-radius:8px;cursor:pointer;transition:all 0.1s;border:1px solid var(--border);background:var(--surface2);color:var(--text2);user-select:none;}
+.chip-prod:hover{border-color:var(--border2);color:var(--text);}
+.chip-prod.checked{background:rgba(46,204,113,0.15);border-color:var(--green);color:var(--green);}
+.chip-check{width:16px;height:16px;border-radius:4px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.camioneta-cargada-btn{width:100%;padding:18px;background:var(--green);color:#000;border:none;border-radius:12px;font-family:var(--display);font-size:22px;letter-spacing:1px;cursor:pointer;margin-top:16px;}
+.camioneta-cargada-btn:hover{filter:brightness(1.1);}
+
+/* RECORRIDO EN CAMINO */
+.recorrido-item-v2{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.recorrido-item-v2.entregado{border-color:var(--green);opacity:0.85;}
+.ri2-header{padding:12px 14px;display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:start;}
+.ri2-num{font-family:var(--display);font-size:20px;color:var(--text3);line-height:1;}
+.ri2-nombre{font-size:14px;font-weight:600;}
+.ri2-dir{font-size:11px;color:var(--text2);margin-top:3px;}
+.ri2-tel{font-size:11px;color:var(--blue);margin-top:2px;}
+.ri2-obs{font-size:11px;color:var(--amber);font-style:italic;margin-top:2px;}
+.ri2-monto{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--accent2);}
+.ri2-pago{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px;text-align:right;}
+.cobro-btn{width:100%;padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:var(--body);font-size:13px;font-weight:500;cursor:pointer;}
+.cobro-btn.entregado{background:rgba(46,204,113,0.15);color:var(--green);border-color:var(--green);}
+.cobro-metodo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.cobro-metodo-btn{padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:var(--mono);font-size:12px;font-weight:700;}
+.cobro-metodo-btn.sel-efectivo{background:rgba(46,204,113,0.15);border-color:var(--green);color:var(--green);}
+.cobro-metodo-btn.sel-transferencia{background:rgba(52,152,219,0.15);border-color:var(--blue);color:var(--blue);}
+.subtotales-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.sub-btn{padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:var(--mono);font-size:13px;font-weight:700;}
+.sub-btn.sel-total{background:rgba(46,204,113,0.15);border-color:var(--green);color:var(--green);}
+.sub-btn.sel-parcial{background:rgba(245,166,35,0.15);border-color:var(--amber);color:var(--amber);}
+.parcial-input{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.parcial-input input{flex:1;background:var(--surface2);border:1px solid var(--amber);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;}
+.efectivo-box{background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.2);border-radius:10px;padding:12px 16px;margin-top:12px;}
+.gasto-form{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:10px;}
+.gasto-form select,.gasto-form input{background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--mono);font-size:12px;width:100%;outline:none;}
+.gasto-item{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;}
+
+/* EN CAMINO */
+.encamino-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;}
+.encamino-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:8px 14px;font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:400;border-bottom:1px solid var(--border);}
+td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+tr:last-child td{border-bottom:none;}
+
+/* CIERRE */
+.cierre-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;}
+
+/* BTNS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:none;font-family:var(--body);font-size:13px;font-weight:500;cursor:pointer;}
+.btn-primary{background:var(--accent);color:white;}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;font-size:13px;z-index:999;opacity:0;transform:translateY(6px);transition:all 0.2s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="logo">FUEGOS YA <span>LOGÍSTICA</span></div>
+    <nav style="display:flex;gap:2px;">
+      <button onclick="location.href='fuegos-ya-dashboard.html'" style="background:none;border:none;color:var(--text2);font-size:12px;font-weight:500;padding:5px 10px;border-radius:6px;cursor:pointer;">Dashboard</button>
+      <button onclick="location.href='fuegos-ya-pedidos.html'" style="background:none;border:none;color:var(--text2);font-size:12px;font-weight:500;padding:5px 10px;border-radius:6px;cursor:pointer;">Pedidos</button>
+      <button onclick="location.href='fuegos-ya-clientes.html'" style="background:none;border:none;color:var(--text2);font-size:12px;font-weight:500;padding:5px 10px;border-radius:6px;cursor:pointer;">Clientes</button>
+    </nav>
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--text3)" id="page-sub"></div>
+  </div>
+
+  <div class="main">
+    <aside class="sidebar">
+      <div class="nav-item active" onclick="setVista('armar')"><span class="nav-icon">🗂</span>Armar recorridos</div>
+      <div class="nav-item" onclick="setVista('chofer')"><span class="nav-icon">📱</span>Vista chofer</div>
+      <div class="nav-item" onclick="setVista('encamino')"><span class="nav-icon">🚚</span>En camino <span id="badge-encamino" style="display:none;background:var(--green);color:#000;border-radius:10px;padding:0 6px;font-size:10px;margin-left:4px;font-family:var(--mono)"></span></div>
+      <div class="nav-item" onclick="setVista('cierre')"><span class="nav-icon">💵</span>Cierre de caja</div>
+    </aside>
+
+    <div class="content">
+
+      <!-- ARMAR -->
+      <div class="vista active" id="vista-armar">
+        <div class="topbar">
+          <div><div class="page-title">ARMAR RECORRIDOS</div><div class="page-sub" id="armar-sub"></div></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="sincronizarPedidos()">⟳ Sync pedidos</button>
+          </div>
+        </div>
+        <div class="zona-filters" id="zona-filters">
+          <button class="zf-btn active" onclick="setZonaFiltro('todas',this)">Todas</button>
+          <button class="zf-btn" onclick="setZonaFiltro('CABA',this)">CABA</button>
+          <button class="zf-btn" onclick="setZonaFiltro('Tigre',this)">Tigre</button>
+          <button class="zf-btn" onclick="setZonaFiltro('Pilar',this)">Pilar</button>
+          <button class="zf-btn" onclick="setZonaFiltro('Zona Sur',this)">Zona Sur</button>
+          <button class="zf-btn" onclick="setZonaFiltro('Zona Oeste',this)">Zona Oeste</button>
+        </div>
+        <div class="armar-grid">
+          <div class="pool-section">
+            <div class="pool-header">
+              <div class="pool-title">PEDIDOS</div>
+              <div class="pool-count" id="pool-count">0 pedidos</div>
+            </div>
+            <div id="pool-grid"></div>
+          </div>
+          <div class="camionetas-section">
+            <!-- MAURO -->
+            <div class="camioneta">
+              <div class="cam-header">
+                <div>
+                  <div class="cam-nombre" style="color:var(--mauro)">Mauro</div>
+                  <div class="cam-stats">
+                    <div class="cam-stat">Paradas: <span id="mauro-paradas">0</span></div>
+                    <div class="cam-stat">Total: <span id="mauro-total">$0</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="cam-body" id="cam-mauro" ondragover="dragOver(event,'mauro')" ondragleave="dragLeave(event)" ondrop="dropOn(event,'mauro')">
+                <div class="cam-empty">Arrastrá pedidos acá</div>
+              </div>
+              <button class="btn-cargar mauro" id="btn-cargar-mauro" onclick="cargarRecorrido('mauro')">CARGAR RECORRIDO →</button>
+            </div>
+            <!-- MAXI -->
+            <div class="camioneta">
+              <div class="cam-header">
+                <div>
+                  <div class="cam-nombre" style="color:var(--maxi)">Maxi</div>
+                  <div class="cam-stats">
+                    <div class="cam-stat">Paradas: <span id="maxi-paradas">0</span></div>
+                    <div class="cam-stat">Total: <span id="maxi-total">$0</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="cam-body" id="cam-maxi" ondragover="dragOver(event,'maxi')" ondragleave="dragLeave(event)" ondrop="dropOn(event,'maxi')">
+                <div class="cam-empty">Arrastrá pedidos acá</div>
+              </div>
+              <button class="btn-cargar maxi" id="btn-cargar-maxi" onclick="cargarRecorrido('maxi')">CARGAR RECORRIDO →</button>
+            </div>
+            <!-- NACHO -->
+            <div class="camioneta">
+              <div class="cam-header">
+                <div>
+                  <div class="cam-nombre" style="color:var(--nacho)">Nacho</div>
+                  <div class="cam-stats">
+                    <div class="cam-stat">Paradas: <span id="nacho-paradas">0</span></div>
+                    <div class="cam-stat">Total: <span id="nacho-total">$0</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="cam-body" id="cam-nacho" ondragover="dragOver(event,'nacho')" ondragleave="dragLeave(event)" ondrop="dropOn(event,'nacho')">
+                <div class="cam-empty">Arrastrá pedidos acá</div>
+              </div>
+              <button class="btn-cargar nacho" id="btn-cargar-nacho" onclick="cargarRecorrido('nacho')">CARGAR RECORRIDO →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHOFER -->
+      <div class="vista" id="vista-chofer">
+        <div class="topbar">
+          <div><div class="page-title">VISTA CHOFER</div></div>
+        </div>
+        <div class="chofer-selector">
+          <button class="chofer-btn mauro" onclick="selChofer('mauro',this)">Mauro</button>
+          <button class="chofer-btn maxi" onclick="selChofer('maxi',this)">Maxi</button>
+          <button class="chofer-btn nacho" onclick="selChofer('nacho',this)">Nacho</button>
+        </div>
+        <div id="chofer-recorrido"></div>
+      </div>
+
+      <!-- EN CAMINO -->
+      <div class="vista" id="vista-encamino">
+        <div class="topbar">
+          <div><div class="page-title">EN CAMINO</div><div class="page-sub">Actualiza cada 15 seg</div></div>
+        </div>
+        <div id="encamino-content"></div>
+      </div>
+
+      <!-- CIERRE -->
+      <div class="vista" id="vista-cierre">
+        <div class="topbar">
+          <div><div class="page-title">CIERRE DE CAJA</div></div>
+        </div>
+        <div id="cierre-content"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATOS
+// ============================================================
+const CHOFERES = ['mauro','maxi','nacho'];
+const SKU_KG = {FY:4,B4:4,B8:8,BB10:10,BB3:3,QB:10,QC:10,ESP:10,MC:0,MP:0,ALA:0,XS:0,INI:0};
+const PAGOLAB = {
+  'efectivo':'Efectivo',
+  'transf-proveedor':'T. Proveedor',
+  'transf-financiera':'T. Financiera',
+  'transf-srl':'T. SRL',
+  'cheque':'Cheque',
+  'transferencia':'Transferencia'
+};
+
+// Pedidos cargados desde localStorage (módulo de pedidos)
+let PEDIDOS = [];
+function cargarPedidosLS() {
+  try {
+    const s = localStorage.getItem('fy_pedidos');
+    if (s) {
+      const parsed = JSON.parse(s);
+      if (parsed && parsed.length > 0) { PEDIDOS = parsed; return; }
+    }
+  } catch(e) {}
+  PEDIDOS = []; // sin demos — arranca vacío
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let pedidos = [];
+cargarPedidosLS();
+pedidos = JSON.parse(JSON.stringify(PEDIDOS));
+let recorridos = {mauro:[], maxi:[], nacho:[]};
+let estadoCarga = {mauro:{}, maxi:{}, nacho:{}};
+let recorridosEnCamino = {};
+let recorridoContador = {};
+let choferActivo = null;
+let zonaFiltro = 'todas';
+let draggedId = null;
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmt(n){return '$'+Math.round(n||0).toLocaleString('es-AR');}
+function calcKg(items){return items.reduce((s,i)=>(s+(SKU_KG[i.sku]||0)*i.qty),0);}
+function hoy(){return new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show';
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500);
+}
+function copiarDir(dir){
+  try{navigator.clipboard.writeText(dir).then(()=>toast('Direccion copiada'));}
+  catch(e){toast('Copia: '+dir);}
+}
+
+// ============================================================
+// NAVEGACION
+// ============================================================
+function setVista(v){
+  document.querySelectorAll('.vista').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('vista-'+v).classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  const map = {armar:0,chofer:1,encamino:2,cierre:3};
+  if(items[map[v]]) items[map[v]].classList.add('active');
+  if(v==='chofer') renderChofer();
+  if(v==='encamino') renderEnCamino();
+  if(v==='cierre') renderCierre();
+}
+
+// ============================================================
+// POOL
+// ============================================================
+function pedidoAsignado(id){return CHOFERES.some(ch=>recorridos[ch].some(r=>r.pedidoId===id));}
+function pedidosSinAsignar(){return pedidos.filter(p=>!pedidoAsignado(p.id));}
+function setZonaFiltro(zona,btn){
+  zonaFiltro=zona;
+  document.querySelectorAll('.zf-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderPool();
+}
+function sincronizarPedidos(){
+  try{
+    const s=localStorage.getItem('fy_pedidos');
+    if(s){
+      const parsed=JSON.parse(s);
+      if(parsed&&parsed.length>0){pedidos=parsed;renderArmar();toast('Pedidos sincronizados — '+parsed.length+' pedidos');return;}
+    }
+    pedidos=[];renderArmar();toast('Sin pedidos en localStorage');
+  }catch(e){toast('Error al sincronizar');}
+}
+
+function renderPool(){
+  let pool=pedidosSinAsignar();
+  if(zonaFiltro!=='todas') pool=pool.filter(p=>p.zona===zonaFiltro);
+  const total=pedidosSinAsignar().length;
+  document.getElementById('pool-count').textContent=pool.length+' de '+total+' pedidos';
+  const grid=document.getElementById('pool-grid');
+  if(!pool.length){
+    grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">'+(zonaFiltro!=='todas'?'Sin pedidos en '+zonaFiltro:'Todos asignados')+'</div>';
+    return;
+  }
+  grid.innerHTML=pool.map(p=>{
+    const kg=calcKg(p.items);
+    const pagoLabel=PAGOLAB[p.pago]||p.pago||'';
+    const chips=p.items.map(i=>'<span style="font-family:var(--mono);font-size:10px;background:var(--surface3);padding:1px 5px;border-radius:3px;color:var(--text2)">'+i.qty+'x'+i.sku+'</span>').join(' ');
+    return '<div class="pool-item canal-'+p.canal+'" draggable="true" ondragstart="dragStart(event,'+p.id+')" ondragend="dragEnd(event)">'
+      +'<div class="pi-main">'
+      +'<div style="min-width:0;">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+      +'<div class="pi-nombre">'+p.clienteNombre+'</div>'
+      +(p.zona?'<span style="font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:3px;background:var(--surface3);color:var(--text3);">'+p.zona+'</span>':'')
+      +'</div>'
+      +(p.dir?'<div style="font-size:11px;color:var(--text2);margin-top:3px;display:flex;align-items:center;gap:6px;"> '+p.dir+(p.localidad?', '+p.localidad:'')+'<button data-dir="'+encodeURIComponent(p.dir+(p.localidad?', '+p.localidad:''))+'" onclick="event.stopPropagation();navigator.clipboard.writeText(decodeURIComponent(this.dataset.dir)).then(()=>{this.textContent=\'OK\';setTimeout(()=>this.textContent=\'Copiar\',1200)}).catch(()=>{})" style="padding:1px 7px;border-radius:4px;border:1px solid var(--border);background:var(--surface3);color:var(--text3);font-size:10px;cursor:pointer;flex-shrink:0;">Copiar</button></div>':'')
+      +(p.obs?'<div style="font-size:10px;color:var(--amber);margin-top:2px;"> '+p.obs+'</div>':'')
+      +'<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;">'+chips+'</div>'
+      +'</div>'
+      +'<div style="text-align:right;flex-shrink:0;margin-left:8px;">'
+      +'<div class="pi-monto">'+fmt(p.total)+'</div>'
+      +'<div style="font-size:10px;color:var(--text3);margin-top:1px;">'+pagoLabel+'</div>'
+      +'</div>'
+      +'<div class="pi-chevron">v</div>'
+      +'</div>'
+      +'<div style="padding:10px 12px;border-top:1px solid var(--border);background:var(--surface2);display:none;" id="pi-exp-'+p.id+'">'
+      +(p.tel?'<div style="font-size:11px;color:var(--blue);margin-bottom:5px;">Tel: '+p.tel+'</div>':'')
+      +'<div style="display:flex;gap:4px;">'
+      +'<button class="assign-btn mauro" data-pid="'+p.id+'" onclick="asignar(parseInt(this.dataset.pid),\'mauro\')">M Mauro</button>'
+      +'<button class="assign-btn maxi" data-pid="'+p.id+'" onclick="asignar(parseInt(this.dataset.pid),\'maxi\')">X Maxi</button>'
+      +'<button class="assign-btn nacho" data-pid="'+p.id+'" onclick="asignar(parseInt(this.dataset.pid),\'nacho\')">N Nacho</button>'
+      +'</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+
+  // Add click toggle
+  pool.forEach(p=>{
+    const item=document.querySelector('[ondragstart="dragStart(event,'+p.id+')"]');
+    if(item){
+      item.querySelector('.pi-main').addEventListener('click',()=>{
+        const exp=document.getElementById('pi-exp-'+p.id);
+        if(exp) exp.style.display=exp.style.display==='none'?'block':'none';
+        item.classList.toggle('expanded');
+      });
+    }
+  });
+}
+
+// ============================================================
+// CAMIONETAS
+// ============================================================
+function renderArmar(){renderPool();CHOFERES.forEach(ch=>renderCamioneta(ch));}
+
+function renderCamioneta(ch){
+  const btn=document.getElementById('btn-cargar-'+ch);
+  const rec=recorridos[ch];
+  const el=document.getElementById('cam-'+ch);
+  document.getElementById(ch+'-paradas').textContent=rec.length;
+  const tot=rec.reduce((s,r)=>{const p=pedidos.find(x=>x.id===r.pedidoId);return s+(p?p.total:0);},0);
+  document.getElementById(ch+'-total').textContent=fmt(tot);
+  if(!rec.length){el.innerHTML='<div class="cam-empty">Arrastrá pedidos acá</div>';if(btn)btn.style.display='none';return;}
+  if(btn) btn.style.display='block';
+  el.innerHTML=rec.map((r,idx)=>{
+    const p=pedidos.find(x=>x.id===r.pedidoId);
+    if(!p) return '';
+    const prodStr=p.items.map(i=>i.qty+'x'+i.sku).join(' ');
+    return '<div class="recorrido-item">'
+      +'<div style="flex:1;min-width:0;">'
+      +'<div class="ri-nombre">'+p.clienteNombre+'</div>'
+      +(p.dir?'<div style="font-size:10px;color:var(--text2);margin-top:1px;"> '+p.dir+'</div>':'')
+      +(p.obs?'<div style="font-size:10px;color:var(--amber);"> '+p.obs+'</div>':'')
+      +'<div class="ri-prods">'+prodStr+'</div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
+      +'<div class="ri-monto">'+fmt(p.total)+'</div>'
+      +'<button data-pid="'+p.id+'" data-ch="'+ch+'" onclick="desasignar(parseInt(this.dataset.pid),this.dataset.ch)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;">x</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function asignar(pedidoId, chofer){
+  if(recorridos[chofer].find(r=>r.pedidoId===pedidoId)) return;
+  recorridos[chofer].push({pedidoId});
+  const p=pedidos.find(x=>x.id===pedidoId);
+  if(p){
+    estadoCarga[chofer][pedidoId]={
+      items:Object.fromEntries(p.items.map(i=>[i.sku+'-'+i.qty,false])),
+      entregado:false,cobrado:false,metodoReal:null,montoEfectivo:0,parcial:false
+    };
+  }
+  renderArmar();
+  toast('Asignado a '+chofer);
+}
+
+function desasignar(pedidoId, chofer){
+  recorridos[chofer]=recorridos[chofer].filter(r=>r.pedidoId!==pedidoId);
+  delete estadoCarga[chofer][pedidoId];
+  renderArmar();
+}
+
+function cargarRecorrido(chofer){
+  if(!recorridos[chofer].length){toast('Sin pedidos asignados');return;}
+  choferActivo=chofer;
+  document.querySelectorAll('.chofer-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.chofer-btn.'+chofer).classList.add('active');
+  setVista('chofer');
+  toast('Recorrido de '+chofer+' listo para cargar');
+}
+
+// ============================================================
+// DRAG & DROP
+// ============================================================
+function dragStart(e,id){draggedId=id;e.dataTransfer.effectAllowed='move';}
+function dragEnd(e){draggedId=null;document.querySelectorAll('.cam-body').forEach(el=>el.classList.remove('drag-over'));}
+function dragOver(e,ch){e.preventDefault();e.dataTransfer.dropEffect='move';document.getElementById('cam-'+ch).classList.add('drag-over');}
+function dragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function dropOn(e,ch){e.preventDefault();e.currentTarget.classList.remove('drag-over');if(draggedId) asignar(draggedId,ch);}
+
+// ============================================================
+// VISTA CHOFER  MODO CARGA
+// ============================================================
+function selChofer(ch,btn){
+  choferActivo=ch;
+  document.querySelectorAll('.chofer-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderChofer();
+}
+
+function renderChofer(){
+  const el=document.getElementById('chofer-recorrido');
+  if(!choferActivo){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">Selecciona un chofer</div>';return;}
+  if(recorridosEnCamino[choferActivo] && (recorridosEnCamino[choferActivo]||[]).find(r=>!r.cerrado)){
+    renderRecorridoEnCamino(choferActivo);
+    return;
+  }
+  const rec=recorridos[choferActivo];
+  if(!rec.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">Sin recorrido asignado</div>';return;}
+  const allP=rec.map(r=>pedidos.find(x=>x.id===r.pedidoId)).filter(Boolean);
+  const totalProds=allP.reduce((s,p)=>s+p.items.length,0);
+  const cargados=allP.reduce((s,p)=>{
+    const est=estadoCarga[choferActivo][p.id]||{items:{}};
+    return s+Object.values(est.items).filter(Boolean).length;
+  },0);
+  const todoCargado=totalProds>0&&cargados===totalProds;
+  const pct=totalProds?Math.round(cargados/totalProds*100):0;
+
+  let html='<div style="background:var(--surface2);border-radius:8px;height:6px;margin-bottom:8px;overflow:hidden;">';
+  html+='<div style="height:100%;border-radius:8px;background:'+(todoCargado?'var(--green)':'var(--amber)')+';width:'+pct+'%;transition:width 0.3s;"></div></div>';
+  html+='<div style="font-family:var(--mono);font-size:11px;color:var(--text3);text-align:right;margin-bottom:12px;">'+cargados+'/'+totalProds+' productos cargados</div>';
+
+  [...rec].reverse().forEach(r=>{
+    const p=pedidos.find(x=>x.id===r.pedidoId);
+    if(!p) return;
+    const est=estadoCarga[choferActivo][p.id]||{items:{}};
+    const checked=Object.values(est.items).filter(Boolean).length;
+    const total=p.items.length;
+    const todoCarg=checked===total&&total>0;
+    html+='<div class="carga-item'+(todoCarg?' cargado':'')+'">';
+    html+='<div class="carga-nombre"><span style="font-size:14px;font-weight:600;">'+p.clienteNombre+'</span>';
+    html+='<div><div class="carga-monto">'+fmt(p.total)+'</div>';
+    html+='<div class="carga-pago">'+(PAGOLAB[p.pago]||p.pago||'')+(p.plazo&&p.plazo!=='0'?'  '+p.plazo+'d':'')+'</div></div></div>';
+    html+='<div class="carga-chips">';
+    p.items.forEach(i=>{
+      const key=i.sku+'-'+i.qty;
+      const isChecked=est.items[key]||false;
+      html+='<div class="chip-prod'+(isChecked?' checked':'')+'" onclick="toggleItemCarga(\''+choferActivo+'\','+p.id+',\''+key+'\')">';
+      html+='<div class="chip-check">'+(isChecked?'OK':'')+'</div>';
+      html+='<span>'+i.qty+'x '+i.sku+'</span></div>';
+    });
+    html+='</div>';
+    if(todoCarg) html+='<div style="font-family:var(--mono);font-size:10px;color:var(--green);margin-top:6px;text-align:right;">OK CARGADO</div>';
+    html+='</div>';
+  });
+
+  if(todoCargado){
+    html+='<button class="camioneta-cargada-btn" onclick="camionetaCargada(\''+choferActivo+'\')"> CAMIONETA CARGADA  SALIR</button>';
+  } else {
+    html+='<div style="text-align:center;padding:12px;font-family:var(--mono);font-size:11px;color:var(--text3);background:var(--surface2);border-radius:10px;margin-top:12px;">Marca todos los productos para habilitar la salida</div>';
+  }
+  el.innerHTML='<div style="max-width:480px;margin:0 auto;">'+html+'</div>';
+}
+
+function toggleItemCarga(chofer,pedidoId,key){
+  if(!estadoCarga[chofer][pedidoId]) return;
+  estadoCarga[chofer][pedidoId].items[key]=!estadoCarga[chofer][pedidoId].items[key];
+  renderChofer();
+}
+
+// ============================================================
+// CAMIONETA CARGADA -> EN CAMINO
+// ============================================================
+function camionetaCargada(chofer){
+  if(!recorridos[chofer].length) return;
+  if(!recorridosEnCamino[chofer]) recorridosEnCamino[chofer]=[];
+  if(!recorridoContador[chofer]) recorridoContador[chofer]=0;
+  recorridoContador[chofer]++;
+  const numero=recorridoContador[chofer];
+  recorridosEnCamino[chofer].push({
+    pedidos:recorridos[chofer].map(r=>r.pedidoId),
+    estadoCarga:JSON.parse(JSON.stringify(estadoCarga[chofer])),
+    salida:new Date().toISOString(),
+    chofer,numero,cerrado:false,pendienteCierre:false,gastos:[]
+  });
+  try{localStorage.setItem('fy_encamino',JSON.stringify(recorridosEnCamino));}catch(e){}
+  recorridos[chofer]=[];
+  estadoCarga[chofer]={};
+  renderArmar();
+  updateBadgeEnCamino();
+  renderChofer();
+  toast('Recorrido #'+numero+' en camino!');
+}
+
+// ============================================================
+// VISTA CHOFER  MODO RECORRIDO
+// ============================================================
+function renderRecorridoEnCamino(chofer){
+  const el=document.getElementById('chofer-recorrido');
+  const arr=recorridosEnCamino[chofer]||[];
+  const rec=arr.find(r=>!r.cerrado);
+  if(!rec){renderChofer();return;}
+  const peds=rec.pedidos.map(id=>pedidos.find(x=>x.id===id)).filter(Boolean);
+  const est=estadoCarga[chofer]||{};
+
+  let html='<div style="max-width:480px;margin:0 auto;">';
+  html+='<div style="background:var(--green2);border:1px solid rgba(46,204,113,0.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;">';
+  html+='<div style="font-family:var(--mono);font-size:11px;color:var(--green)">EN CAMINO  '+peds.length+' paradas</div>';
+  html+='<div style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+peds.filter(p=>(est[p.id]||{}).entregado).length+' entregados</div>';
+  html+='</div>';
+
+  peds.forEach((p,idx)=>{
+    const e=est[p.id]||{entregado:false,metodoReal:null,cobrado:false,parcial:false,montoEfectivo:0};
+    html+='<div class="recorrido-item-v2'+(e.entregado?' entregado':'')+'">';
+    html+='<div class="ri2-header">';
+    html+='<div class="ri2-num">#'+(idx+1)+'</div>';
+    html+='<div>';
+    html+='<div class="ri2-nombre">'+(e.entregado?'OK ':'')+p.clienteNombre+'</div>';
+    if(p.dir) html+='<div class="ri2-dir"> '+p.dir+(p.localidad?', '+p.localidad:'')+'<button onclick="copiarDir(\''+p.dir+'\')" style="margin-left:6px;padding:1px 5px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:10px;cursor:pointer;">copiar</button></div>';
+    if(p.tel) html+='<div class="ri2-tel">Tel: '+p.tel+'</div>'
+      +(p.dpto?'<div style="font-size:11px;color:var(--amber);margin-top:2px;">Piso/Dpto: '+p.dpto+'</div>':'');
+    if(p.obs) html+='<div class="ri2-obs"> '+p.obs+'</div>';
+    html+='<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px;">'+p.items.map(i=>i.qty+'x'+i.sku).join('  ')+'</div>';
+    html+='</div>';
+    html+='<div style="text-align:right;flex-shrink:0;"><div class="ri2-monto">'+fmt(p.total)+'</div><div class="ri2-pago">'+(PAGOLAB[p.pago]||p.pago||'')+'</div></div>';
+    html+='</div>';
+
+    html+='<div style="padding:0 14px 12px;">';
+    html+='<button data-ch="'+chofer+'" data-pid="'+p.id+'" onclick="marcarEntregadoEC(this.dataset.ch,parseInt(this.dataset.pid))" class="cobro-btn'+(e.entregado?' entregado':'')+'">'+(e.entregado?'OK Entregado':'Marcar entregado')+'</button>';
+
+    if(e.entregado){
+      html+='<div class="cobro-metodo-grid">';
+      html+='<button data-ch="'+chofer+'" data-pid="'+p.id+'" data-met="efectivo" onclick="selMetodoEC(this)" class="cobro-metodo-btn'+(e.metodoReal==='efectivo'?' sel-efectivo':'')+'"> Efectivo</button>';
+      html+='<button data-ch="'+chofer+'" data-pid="'+p.id+'" data-met="transferencia" onclick="selMetodoEC(this)" class="cobro-metodo-btn'+(e.metodoReal==='transferencia'?' sel-transferencia':'')+'"> Transf.</button>';
+      html+='</div>';
+
+      if(e.metodoReal==='efectivo'){
+        html+='<div class="subtotales-grid">';
+        html+='<button data-ch="'+chofer+'" data-pid="'+p.id+'" onclick="cobrarTotalEC(this.dataset.ch,parseInt(this.dataset.pid))" class="sub-btn'+(e.cobrado&&!e.parcial?' sel-total':'')+'">'+( e.cobrado&&!e.parcial?'OK TOTAL':'TOTAL')+'</button>';
+        html+='<button data-ch="'+chofer+'" data-pid="'+p.id+'" onclick="activarParcialEC(this.dataset.ch,parseInt(this.dataset.pid))" class="sub-btn'+(e.parcial?' sel-parcial':'')+'">PARCIAL</button>';
+        html+='</div>';
+        if(e.parcial){
+          const pend=Math.max(0,p.total-(e.montoEfectivo||0));
+          html+='<div class="parcial-input">';
+          html+='<span style="font-family:var(--mono);font-size:11px;color:var(--text3);min-width:70px;">Cobrado</span>';
+          html+='<input type="number" placeholder="$0" value="'+(e.montoEfectivo||'')+'" data-ch="'+chofer+'" data-pid="'+p.id+'" onchange="setMontoParcialEC(this.dataset.ch,parseInt(this.dataset.pid),this.value)">';
+          if(pend>0&&(e.montoEfectivo||0)>0) html+='<span style="font-family:var(--mono);font-size:11px;color:var(--red);white-space:nowrap;">debe '+fmt(pend)+'</span>';
+          html+='</div>';
+        }
+      }
+      if(e.metodoReal==='transferencia'){
+        html+='<div style="margin-top:8px;padding:8px 10px;background:rgba(52,152,219,0.08);border:1px solid rgba(52,152,219,0.2);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--blue);">Pendiente de cobro - se registra desde Clientes</div>';
+      }
+    }
+    html+='</div></div>';
+  });
+
+  // Resumen efectivo
+  const totalEfe=peds.reduce((s,p)=>{const e=est[p.id]||{};if(e.metodoReal==='efectivo'){if(e.cobrado&&!e.parcial)return s+p.total;if(e.parcial)return s+(e.montoEfectivo||0);}return s;},0);
+  const totalGastos=(rec.gastos||[]).reduce((s,g)=>s+g.monto,0);
+  html+='<div class="efectivo-box">';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">';
+  html+='<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">EFECTIVO</div><div style="font-family:var(--display);font-size:20px;color:var(--green)">'+fmt(totalEfe)+'</div></div>';
+  html+='<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">GASTOS</div><div style="font-family:var(--display);font-size:20px;color:var(--red)">'+fmt(totalGastos)+'</div></div>';
+  html+='<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">NETO</div><div style="font-family:var(--display);font-size:20px;color:var(--green)">'+fmt(totalEfe-totalGastos)+'</div></div>';
+  html+='</div>';
+  if((rec.gastos||[]).length){
+    rec.gastos.forEach(g=>{
+      html+='<div class="gasto-item"><span>'+(g.cat==='nafta'?'Nafta':g.detalle||'Otros')+'</span><span style="color:var(--red)">-'+fmt(g.monto)+'</span></div>';
+    });
+  }
+  html+='</div>';
+
+  // Form gasto
+  html+='<div class="gasto-form" style="margin-top:10px;">';
+  html+='<div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">+ AGREGAR GASTO</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+  html+='<select id="gasto-cat-'+rec.numero+'" onchange="toggleGastoDetalle('+rec.numero+')">';
+  html+='<option value="nafta">Nafta</option>';
+  html+='<option value="otros">Otros</option>';
+  html+='</' + 'select>';
+  html+='<input type="number" id="gasto-monto-'+rec.numero+'" placeholder="Monto $">';
+  html+='</div>';
+  html+='<input type="text" id="gasto-det-'+rec.numero+'" placeholder="Detalle..." style="display:none;margin-top:6px;">';
+  html+='<button data-ch="'+chofer+'" data-num="'+rec.numero+'" onclick="agregarGasto(this.dataset.ch,parseInt(this.dataset.num))" style="width:100%;margin-top:8px;padding:7px;border-radius:7px;border:none;background:var(--surface3);color:var(--text2);font-family:var(--mono);font-size:11px;cursor:pointer;">Agregar gasto</button>';
+  html+='</div>';
+
+  html+='<button data-ch="'+chofer+'" data-num="'+rec.numero+'" onclick="finalizarRecorrido(this.dataset.ch,parseInt(this.dataset.num))" style="width:100%;padding:16px;background:var(--accent);color:white;border:none;border-radius:12px;font-family:var(--display);font-size:20px;letter-spacing:1px;cursor:pointer;margin-top:12px;">RECORRIDO FINALIZADO</button>';
+
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+function marcarEntregadoEC(ch,pid){
+  if(!estadoCarga[ch]) estadoCarga[ch]={};
+  if(!estadoCarga[ch][pid]) estadoCarga[ch][pid]={items:{},entregado:false,metodoReal:null,cobrado:false,parcial:false,montoEfectivo:0};
+  estadoCarga[ch][pid].entregado=!estadoCarga[ch][pid].entregado;
+  syncEC(ch);renderRecorridoEnCamino(ch);
+}
+function selMetodoEC(btn){
+  const ch=btn.dataset.ch,pid=parseInt(btn.dataset.pid),met=btn.dataset.met;
+  if(!estadoCarga[ch][pid]) return;
+  const e=estadoCarga[ch][pid];
+  e.metodoReal=e.metodoReal===met?null:met;
+  if(met==='transferencia'){e.cobrado=false;e.parcial=false;e.montoEfectivo=0;}
+  syncEC(ch);renderRecorridoEnCamino(ch);
+}
+function cobrarTotalEC(ch,pid){
+  const p=pedidos.find(x=>x.id===pid);
+  if(!estadoCarga[ch][pid]||!p) return;
+  estadoCarga[ch][pid].cobrado=true;estadoCarga[ch][pid].parcial=false;estadoCarga[ch][pid].montoEfectivo=p.total;
+  syncEC(ch);renderRecorridoEnCamino(ch);
+}
+function activarParcialEC(ch,pid){
+  if(!estadoCarga[ch][pid]) return;
+  const e=estadoCarga[ch][pid];
+  e.parcial=!e.parcial;if(e.parcial){e.cobrado=false;}
+  syncEC(ch);renderRecorridoEnCamino(ch);
+}
+function setMontoParcialEC(ch,pid,val){
+  if(!estadoCarga[ch][pid]) return;
+  const e=estadoCarga[ch][pid],p=pedidos.find(x=>x.id===pid);
+  e.montoEfectivo=parseInt(val)||0;
+  if(p) e.cobrado=e.montoEfectivo>=p.total;
+  syncEC(ch);renderRecorridoEnCamino(ch);
+}
+function syncEC(ch){
+  const arr=recorridosEnCamino[ch]||[];
+  const rec=arr.find(r=>!r.cerrado);
+  if(rec) rec.estadoCarga=JSON.parse(JSON.stringify(estadoCarga[ch]));
+  try{localStorage.setItem('fy_encamino',JSON.stringify(recorridosEnCamino));}catch(e){}
+}
+function toggleGastoDetalle(num){
+  const cat=document.getElementById('gasto-cat-'+num)?.value;
+  const det=document.getElementById('gasto-det-'+num);
+  if(det) det.style.display=cat==='otros'?'block':'none';
+}
+function agregarGasto(ch,num){
+  const arr=recorridosEnCamino[ch]||[];
+  const rec=arr.find(r=>r.numero===num);
+  if(!rec) return;
+  const cat=document.getElementById('gasto-cat-'+num)?.value||'nafta';
+  const monto=parseInt(document.getElementById('gasto-monto-'+num)?.value)||0;
+  const detalle=document.getElementById('gasto-det-'+num)?.value?.trim()||'';
+  if(!monto){toast('Ingresa un monto');return;}
+  if(!rec.gastos) rec.gastos=[];
+  rec.gastos.push({cat,monto,detalle});
+  try{localStorage.setItem('fy_encamino',JSON.stringify(recorridosEnCamino));}catch(e){}
+  toast('Gasto registrado');
+  renderRecorridoEnCamino(ch);
+}
+function finalizarRecorrido(ch,num){
+  if(!confirm('Confirmar que el recorrido esta finalizado?')) return;
+  const arr=recorridosEnCamino[ch]||[];
+  const rec=arr.find(r=>r.numero===num);
+  if(!rec) return;
+  rec.pendienteCierre=true;
+  estadoCarga[ch]={};
+  try{localStorage.setItem('fy_encamino',JSON.stringify(recorridosEnCamino));}catch(e){}
+  updateBadgeEnCamino();
+  renderArmar();
+  renderChofer();
+  toast('Recorrido #'+num+' finalizado');
+}
+
+// ============================================================
+// EN CAMINO
+// ============================================================
+function updateBadgeEnCamino(){
+  let count=0;
+  CHOFERES.forEach(ch=>{const arr=recorridosEnCamino[ch];if(Array.isArray(arr))count+=arr.filter(r=>!r.cerrado).length;});
+  const badge=document.getElementById('badge-encamino');
+  if(badge){badge.style.display=count>0?'inline':'none';badge.textContent=count;}
+}
+
+function renderEnCamino(){
+  const el=document.getElementById('encamino-content');
+  let hayAlgo=false,html='';
+  const COLORS={mauro:'var(--mauro)',maxi:'var(--maxi)',nacho:'var(--nacho)'};
+
+  CHOFERES.forEach(ch=>{
+    (recorridosEnCamino[ch]||[]).forEach(rec=>{
+      hayAlgo=true;
+      const peds=rec.pedidos.map(id=>pedidos.find(x=>x.id===id)).filter(Boolean);
+      const est=rec.estadoCarga||{};
+      const color=COLORS[ch]||'var(--accent)';
+      const salida=new Date(rec.salida).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+      const entregados=peds.filter(p=>(est[p.id]||{}).entregado).length;
+      const cobrado=peds.reduce((s,p)=>{const e=est[p.id]||{};if(e.metodoReal==='efectivo'&&(e.cobrado||e.parcial))return s+(e.montoEfectivo||p.total);return s;},0);
+      const gastos=(rec.gastos||[]).reduce((s,g)=>s+g.monto,0);
+      const total=peds.reduce((s,p)=>s+p.total,0);
+
+      html+='<div class="encamino-card" style="border-top:3px solid '+color+(rec.cerrado?';opacity:0.6':'')+';">';
+      html+='<div class="encamino-header">';
+      html+='<div style="display:flex;align-items:center;gap:10px;">';
+      html+='<div style="font-family:var(--display);font-size:20px;color:'+color+'">'+ch.toUpperCase()+' #'+rec.numero+'</div>';
+      html+='<div style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+salida+'  '+peds.length+' paradas'+(rec.pendienteCierre&&!rec.cerrado?'  PENDIENTE CIERRE':'')+'</div>';
+      html+='</div>';
+      html+='<div style="display:flex;gap:16px;">';
+      html+='<div style="text-align:right;"><div style="font-family:var(--mono);font-size:9px;color:var(--text3)">ENTREGADOS</div><div style="font-family:var(--display);font-size:18px;color:'+color+'">'+entregados+'/'+peds.length+'</div></div>';
+      html+='<div style="text-align:right;"><div style="font-family:var(--mono);font-size:9px;color:var(--text3)">EFE NETO</div><div style="font-family:var(--display);font-size:18px;color:var(--green)">'+fmt(cobrado-gastos)+'</div></div>';
+      html+='<div style="text-align:right;"><div style="font-family:var(--mono);font-size:9px;color:var(--text3)">TOTAL</div><div style="font-family:var(--display);font-size:18px;color:var(--text2)">'+fmt(total)+'</div></div>';
+      html+='</div></div>';
+
+      html+='<div style="overflow-x:auto;"><table>';
+      html+='<thead><tr><th>#</th><th>Cliente</th><th>Pedido</th><th style="text-align:right">Monto</th><th>Metodo</th><th>Estado</th></tr></thead><tbody>';
+      peds.forEach((p,idx)=>{
+        const e=est[p.id]||{};
+        const met=e.metodoReal;
+        const cobP=e.cobrado?(e.montoEfectivo||p.total):0;
+        const pend=Math.max(0,p.total-cobP);
+        let color2,label;
+        if(!e.entregado){color2='var(--text3)';label='Pendiente';}
+        else if(met==='transferencia'){color2='var(--blue)';label='Transf. pendiente';}
+        else if(e.cobrado&&!e.parcial){color2='var(--green)';label='OK Cobrado total';}
+        else if(e.parcial&&cobP>0){color2='var(--amber)';label='Parcial  debe '+fmt(pend);}
+        else{color2='var(--green)';label='OK Entregado';}
+        const chips=p.items.map(i=>'<span style="font-family:var(--mono);font-size:10px;background:var(--surface3);padding:1px 4px;border-radius:3px;color:var(--text2)">'+i.qty+'x'+i.sku+'</span>').join(' ');
+        html+='<tr style="opacity:'+(e.entregado?1:0.5)+'">';
+        html+='<td style="font-family:var(--mono);font-size:11px;color:var(--text3)">#'+(idx+1)+'</td>';
+        html+='<td style="font-weight:'+(e.entregado?'600':'400')+'">'+p.clienteNombre+'</td>';
+        html+='<td>'+chips+'</td>';
+        html+='<td style="font-family:var(--mono);text-align:right">'+fmt(p.total)+'</td>';
+        html+='<td style="font-family:var(--mono);font-size:11px;color:var(--text3)">'+(met?PAGOLAB[met]||met:'')+'</td>';
+        html+='<td style="font-family:var(--mono);font-size:11px;color:'+color2+'">'+label+'</td>';
+        html+='</tr>';
+      });
+      html+='</tbody></table></div>';
+
+      html+='<div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;align-items:center;gap:10px;">';
+      if(rec.pendienteCierre&&!rec.cerrado){
+        html+='<button data-ch="'+ch+'" data-num="'+rec.numero+'" onclick="confirmarCierre(this.dataset.ch,parseInt(this.dataset.num))" style="padding:6px 14px;border-radius:6px;border:none;background:var(--green);color:#000;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;">CONFIRMAR CIERRE</button>';
+      } else if(!rec.cerrado){
+        html+='<span style="font-family:var(--mono);font-size:10px;color:var(--text3)">Actualiza cada 15 seg</span>';
+      } else {
+        html+='<span style="font-family:var(--mono);font-size:10px;color:var(--text3)">Cerrado</span>';
+      }
+      html+='</div></div>';
+    });
+  });
+
+  if(!hayAlgo){
+    el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3);"><div style="font-size:32px;margin-bottom:12px"></div><div style="font-family:var(--display);font-size:20px">Sin recorridos activos</div></div>';
+    return;
+  }
+  el.innerHTML=html;
+}
+
+function confirmarCierre(ch,num){
+  const arr=recorridosEnCamino[ch]||[];
+  const rec=arr.find(r=>r.numero===num);
+  if(!rec) return;
+  // Registrar gastos en fy_gastos_v1
+  try{
+    const gastos=JSON.parse(localStorage.getItem('fy_gastos_v1')||'{}');
+    if(!gastos.gastos) gastos.gastos=[];
+    (rec.gastos||[]).forEach(g=>{
+      gastos.gastos.push({id:'gcho_'+Date.now(),fecha:new Date().toISOString().split('T')[0],tipo:'variable',desc:'Gasto recorrido '+ch+' #'+num+'  '+(g.cat==='nafta'?'Nafta':g.detalle||'Otros'),cat:'logistica',monto:g.monto,pago:'efectivo',nota:'Recorrido #'+num});
+    });
+    localStorage.setItem('fy_gastos_v1',JSON.stringify(gastos));
+  }catch(e){}
+  rec.cerrado=true;rec.cierreEn=new Date().toISOString();
+  try{localStorage.setItem('fy_encamino',JSON.stringify(recorridosEnCamino));}catch(e){}
+  toast('Recorrido #'+num+' cerrado  registrado en finanzas');
+  renderEnCamino();
+}
+
+function syncEnCamino(){
+  try{
+    const data=JSON.parse(localStorage.getItem('fy_encamino')||'{}');
+    recorridosEnCamino=data;
+    updateBadgeEnCamino();
+    if(document.getElementById('vista-encamino').classList.contains('active')) renderEnCamino();
+  }catch(e){}
+}
+
+// ============================================================
+// CIERRE
+// ============================================================
+function renderCierre(){
+  const el=document.getElementById('cierre-content');
+  const todos=[];
+  CHOFERES.forEach(ch=>(recorridosEnCamino[ch]||[]).forEach(r=>todos.push({...r,chofer:ch})));
+  if(!todos.length){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:28px;margin-bottom:8px"></div><div style="font-family:var(--display);font-size:20px">Sin recorridos del dia</div></div>';
+    return;
+  }
+
+  // Totales del día
+  let totalEfeDia=0,totalGastosDia=0,totalTransfDia=0;
+
+  const cards=todos.map(rec=>{
+    const peds=rec.pedidos.map(id=>pedidos.find(x=>x.id===id)).filter(Boolean);
+    const est=rec.estadoCarga||{};
+    const efe=peds.reduce((s,p)=>{const e=est[p.id]||{};if(e.metodoReal==='efectivo'&&(e.cobrado||e.parcial))return s+(e.montoEfectivo||p.total);return s;},0);
+    const transf=peds.reduce((s,p)=>{const e=est[p.id]||{};if(e.metodoReal==='transferencia')return s+p.total;return s;},0);
+    const gastos=(rec.gastos||[]).reduce((s,g)=>s+g.monto,0);
+    const neto=efe-gastos;
+    const cerrado=rec.cajaCerrada;
+    totalEfeDia+=efe;totalGastosDia+=gastos;totalTransfDia+=transf;
+
+    return '<div class="cierre-card" style="'+(cerrado?'opacity:0.6;border-color:var(--green);':'')+'">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">'
+      +'<div style="font-family:var(--display);font-size:20px;">'+rec.chofer.toUpperCase()+' #'+rec.numero
+      +(rec.pendienteCierre?'<span style="font-family:var(--mono);font-size:10px;background:rgba(245,166,35,0.15);color:var(--amber);border-radius:4px;padding:2px 7px;margin-left:8px;">PENDIENTE CIERRE</span>':'')
+      +(cerrado?'<span style="font-family:var(--mono);font-size:10px;background:rgba(46,204,113,0.15);color:var(--green);border-radius:4px;padding:2px 7px;margin-left:8px;">OK CAJA CERRADA</span>':'')
+      +'</div>'
+      +(!cerrado&&rec.pendienteCierre ? '<button data-ch="'+rec.chofer+'" data-num="'+rec.numero+'" onclick="cerrarCaja(this.dataset.ch,parseInt(this.dataset.num))" style="padding:8px 16px;border-radius:8px;border:none;background:var(--green);color:#000;font-family:var(--display);font-size:16px;cursor:pointer;letter-spacing:0.5px;">CERRAR CAJA</button>' : '')
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px;">'
+      +'<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">EFECTIVO COBRADO</div><div style="font-family:var(--display);font-size:22px;color:var(--green)">'+fmt(efe)+'</div></div>'
+      +'<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">GASTOS</div><div style="font-family:var(--display);font-size:22px;color:var(--red)">'+fmt(gastos)+'</div></div>'
+      +'<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">NETO A ENTREGAR</div><div style="font-family:var(--display);font-size:22px;color:var(--green)">'+fmt(neto)+'</div></div>'
+      +'<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">TRANSFERENCIAS</div><div style="font-family:var(--display);font-size:22px;color:var(--blue)">'+fmt(transf)+'</div></div>'
+      +'</div>'
+      // Detalle por pedido
+      +'<div style="border-top:1px solid var(--border);padding-top:10px;">'
+      +'<div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">DETALLE</div>'
+      +peds.map(p=>{
+        const e=est[p.id]||{};
+        const met=e.metodoReal;
+        const cobP=e.cobrado?(e.montoEfectivo||p.total):0;
+        const pend=Math.max(0,p.total-cobP);
+        let estadoLabel,estadoColor;
+        if(!e.entregado){estadoColor='var(--text3)';estadoLabel='No entregado';}
+        else if(met==='transferencia'){estadoColor='var(--blue)';estadoLabel='Transf. pendiente';}
+        else if(e.cobrado&&!e.parcial){estadoColor='var(--green)';estadoLabel='OK '+fmt(p.total);}
+        else if(e.parcial&&cobP>0){estadoColor='var(--amber)';estadoLabel='Parcial '+fmt(cobP)+' / debe '+fmt(pend);}
+        else{estadoColor='var(--text3)';estadoLabel='Sin cobro';}
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;">'
+          +'<span style="font-weight:500">'+p.clienteNombre+'</span>'
+          +'<div style="display:flex;gap:16px;align-items:center;">'
+          +'<span style="font-family:var(--mono);font-size:11px;color:var(--text2)">'+fmt(p.total)+'</span>'
+          +'<span style="font-family:var(--mono);font-size:11px;color:'+estadoColor+'">'+estadoLabel+'</span>'
+          +'</div></div>';
+      }).join('')
+      +'</div>'
+      +'</div>';
+  });
+
+  // Resumen total del día
+  const resumen='<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:20px;">'
+    +'<div style="font-family:var(--display);font-size:22px;letter-spacing:1px;margin-bottom:14px;">RESUMEN DEL DÍA</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;">'
+    +'<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">EFECTIVO TOTAL</div><div style="font-family:var(--display);font-size:28px;color:var(--green)">'+fmt(totalEfeDia)+'</div></div>'
+    +'<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">GASTOS TOTAL</div><div style="font-family:var(--display);font-size:28px;color:var(--red)">'+fmt(totalGastosDia)+'</div></div>'
+    +'<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">NETO EFECTIVO</div><div style="font-family:var(--display);font-size:28px;color:var(--green)">'+fmt(totalEfeDia-totalGastosDia)+'</div></div>'
+    +'<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">TRANSFERENCIAS</div><div style="font-family:var(--display);font-size:28px;color:var(--blue)">'+fmt(totalTransfDia)+'</div></div>'
+    +'</div></div>';
+
+  el.innerHTML=resumen+cards.join('');
+}
+
+function cerrarCaja(ch,num){
+  const arr=recorridosEnCamino[ch]||[];
+  const rec=arr.find(r=>r.numero===num);
+  if(!rec) return;
+
+  // Registrar gastos en fy_gastos_v1
+  try{
+    const gastos=JSON.parse(localStorage.getItem('fy_gastos_v1')||'{}');
+    if(!gastos.gastos) gastos.gastos=[];
+    (rec.gastos||[]).forEach(g=>{
+      gastos.gastos.push({
+        id:'gcho_'+Date.now()+'_'+Math.random().toString(36).slice(2),
+        fecha:new Date().toISOString().split('T')[0],
+        tipo:'variable',
+        desc:'Gasto recorrido '+ch+' #'+num+'  '+(g.cat==='nafta'?'Nafta':g.detalle||'Otros'),
+        cat:'logistica',monto:g.monto,pago:'efectivo',nota:'Recorrido #'+num
+      });
+    });
+    localStorage.setItem('fy_gastos_v1',JSON.stringify(gastos));
+  }catch(e){}
+
+  // Marcar caja cerrada
+  rec.cajaCerrada=true;
+  rec.cerrado=true;
+  rec.cierreEn=new Date().toISOString();
+  try{localStorage.setItem('fy_encamino',JSON.stringify(recorridosEnCamino));}catch(e){}
+  toast('Caja cerrada  recorrido '+ch.charAt(0).toUpperCase()+ch.slice(1)+' #'+num+' registrado en finanzas');
+  renderCierre();
+  updateBadgeEnCamino();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('page-sub').textContent=hoy()+'  Recorridos del día';
+document.getElementById('armar-sub').textContent=hoy()+'  '+pedidos.length+' pedidos cargados';
+// Cargar estado guardado
+try {
+  const saved = JSON.parse(localStorage.getItem('fy_encamino')||'{}');
+  recorridosEnCamino = {};
+  CHOFERES.forEach(ch => {
+    recorridosEnCamino[ch] = Array.isArray(saved[ch]) ? saved[ch] : [];
+  });
+} catch(e) {
+  recorridosEnCamino = {mauro:[],maxi:[],nacho:[]};
+}
+renderArmar();
+updateBadgeEnCamino();
+setInterval(syncEnCamino,15000);
+</script>
+</body>
+</html>
