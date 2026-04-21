@@ -1,0 +1,2088 @@
+{EMPS=getEMPS();<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fuegos Ya — Inventario</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#252525;
+  --border:#2a2a2a;--border2:#333;
+  --text:#f0ede8;--text2:#888;--text3:#555;
+  --accent:#e8470a;--accent2:#ff6b35;
+  --green:#2ecc71;--red:#e74c3c;--amber:#f5a623;--blue:#3498db;--purple:#8b5cf6;
+  --mono:'DM Mono',monospace;--display:'Bebas Neue',sans-serif;--body:'DM Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;}
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;}
+.logo{font-family:var(--display);font-size:18px;letter-spacing:2px;color:var(--accent2);}
+.nav-links{display:flex;gap:2px;}
+.nav-btn{background:none;border:none;color:var(--text2);font-family:var(--mono);font-size:11px;font-weight:600;padding:6px 10px;border-radius:6px;cursor:pointer;}
+.nav-btn:hover{background:var(--border);color:var(--text);}
+.nav-btn.active{background:var(--accent);color:white;}
+.tabs-bar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 20px;}
+.tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;background:var(--bg);position:sticky;top:48px;z-index:99;}
+.tab{padding:14px 18px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.5px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;}
+.tab:hover{color:var(--text2);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--surface2);}
+.page{display:flex;flex-direction:column;height:100vh;}
+.content{flex:1;overflow-y:auto;padding:24px;}
+.vista{display:none;}.vista.active{display:block;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:none;font-family:var(--body);font-size:13px;font-weight:500;cursor:pointer;}
+.btn-primary{background:var(--accent);color:white;}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-family:var(--display);font-size:18px;letter-spacing:0.5px;}
+.form-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;}
+.fg{display:grid;gap:10px;margin-bottom:12px;}
+.fg2{grid-template-columns:1fr 1fr;}
+.fg3{grid-template-columns:1fr 1fr 1fr;}
+.fg4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.fg5{grid-template-columns:1fr 1fr 1fr 1fr 1fr;}
+.ff label{display:block;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:4px;}
+.fi{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:7px 11px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;}
+.fi:focus{border-color:var(--accent);}
+.dep-tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.dep-tab{flex:1;padding:10px;text-align:center;font-family:var(--display);font-size:16px;letter-spacing:0.5px;cursor:pointer;color:var(--text3);border-right:1px solid var(--border);}
+.dep-tab:last-child{border-right:none;}
+.dep-tab.active-t{color:var(--accent2);border-bottom:2px solid var(--accent2);}
+.dep-tab.active-p{color:var(--blue);border-bottom:2px solid var(--blue);}
+.srow{display:grid;grid-template-columns:2fr 1fr 130px;gap:8px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);}
+.srow:hover{background:var(--surface2);}
+.srow:last-child{border-bottom:none;}
+.sname{font-size:13px;font-weight:500;}
+.sid{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;}
+.sqty{font-family:var(--display);font-size:22px;}
+.sunit{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.sctrl{display:flex;align-items:center;gap:4px;}
+.sctrl button{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:14px;font-weight:600;}
+.sctrl input{width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:var(--text);font-family:var(--mono);font-size:12px;text-align:center;outline:none;}
+.ok{color:var(--green);}
+.bajo{color:var(--amber);}
+.critico{color:var(--red);}
+.prov-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+.pend-row{display:grid;grid-template-columns:100px 2fr 1fr 1fr 1fr auto;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+.pend-row:hover{background:var(--surface2);}
+.cam-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;}
+.cam-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:8px 14px;font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:400;border-bottom:1px solid var(--border);background:var(--surface2);}
+td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-family:var(--mono);font-size:9px;font-weight:700;}
+.b-amber{background:rgba(245,166,35,0.15);color:var(--amber);}
+.b-green{background:rgba(46,204,113,0.12);color:var(--green);}
+.b-red{background:rgba(231,76,60,0.12);color:var(--red);}
+.b-blue{background:rgba(52,152,219,0.12);color:var(--blue);}
+.sec-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;padding:10px 16px 6px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;font-size:13px;z-index:999;opacity:0;transform:translateY(6px);transition:all 0.2s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<div class="page">
+<div style="display:flex;align-items:center;padding:0 16px;background:#161616;border-bottom:1px solid #2a2a2a;height:48px;position:sticky;top:0;z-index:200;overflow-x:auto;gap:0;flex-wrap:nowrap;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#e8470a;margin-right:20px;flex-shrink:0;">FUEGOS YA</div><a href="fuegos-ya-operaciones.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">OPERACIONES</a><a href="fuegos-ya-clientes.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">CLIENTES</a><a href="fuegos-ya-finanzas.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">FINANZAS</a><a href="#" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#f0f0f0;text-decoration:none;border-bottom:2px solid #e8470a;white-space:nowrap;">INVENTARIO</a><a href="fuegos-ya-rrhh.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">RRHH</a><a href="fuegos-ya-dashboard.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">DASHBOARD</a><a href="fuegos-ya-config.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">CONFIG</a></div>
+<div class="tabs">
+    <button class="tab active" onclick="setTab('mp',this)">MATERIA PRIMA</button>
+    <button class="tab" onclick="setTab('pt',this)">PROD. TERMINADO</button>
+    <button class="tab" onclick="setTab('pkg',this)">PACKAGING</button>
+    <button class="tab" onclick="setTab('cam',this)">CAMIONES</button>
+    <button class="tab" onclick="setTab('prod',this)">PRODUCCIÓN</button>
+    <button class="tab" onclick="setTab('mov',this)">MOVIMIENTOS</button>
+    <button class="tab" onclick="setTab('costos',this)">COSTOS</button>
+  </div>
+  <div class="content">
+<div class="vista active" id="tab-mp">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:var(--display);font-size:22px;letter-spacing:1px;">MATERIA PRIMA</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">Editá el campo y salí para guardar</div>
+      </div>
+      <div class="dep-tabs" id="mp-dtabs">
+        <div class="dep-tab active-t" onclick="setDep('mp','tigre',this)">TIGRE</div>
+        <div class="dep-tab" onclick="setDep('mp','pilar',this)">PILAR</div>
+      </div>
+      <div id="mp-body"></div>
+    </div>
+
+    <!-- PRODUCTO TERMINADO -->
+    <div class="vista" id="tab-pt">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:var(--display);font-size:22px;letter-spacing:1px;">PRODUCTO TERMINADO</div>
+      </div>
+      <div class="dep-tabs" id="pt-dtabs">
+        <div class="dep-tab active-t" onclick="setDep('pt','tigre',this)">TIGRE</div>
+        <div class="dep-tab" onclick="setDep('pt','pilar',this)">PILAR</div>
+      </div>
+      <div id="pt-body"></div>
+
+      <!-- DISTRIBUIDOS -->
+      <div style="margin-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-family:var(--display);font-size:18px;letter-spacing:1px;">DISTRIBUIDOS</div>
+          <button class="btn btn-primary" onclick="toggleFormDist()">+ ENTRADA</button>
+        </div>
+        <div class="form-card" id="form-dist" style="display:none;margin-bottom:16px;">
+          <div style="font-family:var(--display);font-size:16px;margin-bottom:12px;">REGISTRAR ENTRADA DISTRIBUIDOS</div>
+          <div class="fg fg3">
+            <div class="ff"><label>FECHA</label><input class="fi" type="date" id="dist-fecha"></div>
+            <div class="ff"><label>PROVEEDOR</label>
+              <select class="fi" id="dist-prov" onchange="loadDistProductos()"></select>
+            </div>
+            <div class="ff"><label>DEPÓSITO</label>
+              <select class="fi" id="dist-dep">
+                <option value="tigre">TIGRE</option>
+                <option value="pilar">PILAR</option>
+              </select>
+            </div>
+          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">PRODUCTOS</div>
+          <div id="dist-lineas"></div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin:10px 0 6px;">PAGO</div>
+          <div class="fg fg3">
+            <div class="ff"><label>TOTAL</label><input class="fi" type="number" id="dist-total" placeholder="0" inputmode="numeric" onchange="calcDistSaldo()"></div>
+            <div class="ff"><label>ADELANTO YA ENVIADO</label><input class="fi" type="number" id="dist-adel" placeholder="0" inputmode="numeric" onchange="calcDistSaldo()"></div>
+            <div class="ff"><label>SALDO A PAGAR</label><input class="fi" id="dist-saldo" readonly></div>
+          </div>
+          <div class="fg fg2" style="margin-top:8px;">
+            <div class="ff"><label>CAJA PARA PAGO</label>
+              <select class="fi" id="dist-caja"></select>
+            </div>
+            <div class="ff"><label>OBSERVACIONES</label><input class="fi" id="dist-obs" placeholder="Opcional..."></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn btn-primary" onclick="confirmarDist()">CONFIRMAR ENTRADA</button>
+            <button class="btn btn-ghost" onclick="toggleFormDist()">CANCELAR</button>
+          </div>
+        </div>
+        <div id="dist-stock-body"></div>
+      </div>
+    </div>
+
+    <!-- PACKAGING -->
+    <div class="vista" id="tab-pkg">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:var(--display);font-size:22px;letter-spacing:1px;">PACKAGING</div>
+        <button class="btn btn-primary btn-sm" onclick="toggleFormBolsas()">+ ENTRADA DE BOLSAS</button>
+      </div>
+      <div class="form-card" id="form-bolsas" style="display:none;">
+        <div style="font-family:var(--display);font-size:16px;margin-bottom:12px;">NUEVA ENTRADA DE BOLSAS</div>
+        <div class="fg fg4">
+          <div class="ff"><label>PROVEEDOR</label>
+            <select class="fi" id="pb-prov" onchange="filterPkgTipo();autoFillPkgPrecio()">
+              <option value="prov1">DANIEL VIDELA — Personalizadas + Parrilla</option>
+              <option value="prov2">MIGUEL QUEGLAS — Bolsa 4kg y 8kg</option>
+              <option value="prov3">AGUSTÍN MOGLIA — Sel. a mano + Leña (negro)</option>
+              <option value="prov4">CÉSAR — Caja FY 4kg</option>
+            </select>
+          </div>
+          <div class="ff"><label>TIPO DE BOLSA</label><select class="fi" id="pb-tipo" onchange="autoFillPkgPrecio()"></select></div>
+          <div class="ff"><label>CANTIDAD</label><input class="fi" type="number" id="pb-cant" placeholder="0"></div>
+          <div class="ff"><label>DEPÓSITO DESTINO</label>
+            <select class="fi" id="pb-dep">
+              <option value="tigre">TIGRE</option>
+              <option value="pilar">PILAR</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg fg4">
+          <div class="ff"><label>PRECIO UNITARIO (sin IVA)</label><input class="fi" type="number" id="pb-precio" placeholder="$0" oninput="calcPbTotal()"></div>
+          <div class="ff"><label>IVA</label>
+            <select class="fi" id="pb-iva" onchange="calcPbTotal()">
+              <option value="si">CON IVA 21%</option>
+              <option value="no">SIN IVA (negro)</option>
+            </select>
+          </div>
+          <div class="ff"><label>TOTAL A PAGAR</label><input class="fi" id="pb-total" readonly style="color:var(--amber);"></div>
+          <div class="ff"><label>FECHA</label><input class="fi" type="date" id="pb-fecha"></div>
+        </div>
+        <div class="fg fg2">
+          <div class="ff"><label>REMITO / NOTAS</label><input class="fi" id="pb-notas" placeholder="Nro. remito, observaciones..."></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="confirmarBolsas()">CONFIRMAR ENTRADA</button>
+          <button class="btn btn-ghost" onclick="toggleFormBolsas()">CANCELAR</button>
+        </div>
+      </div>
+
+      <div class="dep-tabs" id="pkg-dtabs">
+        <div class="dep-tab active-t" onclick="setDep('pkg','tigre',this)">TIGRE</div>
+        <div class="dep-tab" onclick="setDep('pkg','pilar',this)">PILAR</div>
+      </div>
+      <div id="pkg-body"></div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title">PAGOS PENDIENTES — BOLSAS</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--amber);" id="pkg-total-pend"></div>
+        </div>
+        <div class="pend-row" style="background:var(--surface2);padding:8px 14px;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">FECHA</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">PROVEEDOR / BOLSA</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">CANTIDAD</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">TOTAL</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">IVA</div>
+          <div></div>
+        </div>
+        <div id="pkg-pend-lista"></div>
+      </div>
+    </div>
+
+    <!-- CAMIONES -->
+    <div class="vista" id="tab-cam">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:var(--display);font-size:22px;letter-spacing:1px;">RECEPCIÓN DE CAMIONES</div>
+        <button class="btn btn-primary" onclick="toggleFormCam()">+ NUEVO CAMIÓN</button>
+      </div>
+
+      <!-- COSTOS ACTUALES -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;" id="costos-panel">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">COSTO PROMEDIO — CARBÓN</div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="recalcularPromedios()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;font-size:11px;padding:3px 8px;font-family:var(--mono);">↺ RECALCULAR</button>
+              <button onclick="editarConfig()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;">⚙ CONFIG</button>
+            </div>
+          </div>
+          <div style="padding:14px 16px;" id="costos-carbon"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">COSTO PROMEDIO — LEÑA</div>
+          </div>
+          <div style="padding:14px 16px;" id="costos-lena"></div>
+        </div>
+      </div>
+
+      <!-- CARBONILLA -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header">
+          <div class="card-title">CARBONILLA</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text3);" id="carbonilla-header"></div>
+        </div>
+        <div style="padding:14px 16px;" id="carbonilla-panel"></div>
+      </div>
+
+      <div class="form-card" id="form-cam" style="display:none;">
+        <div style="font-family:var(--display);font-size:18px;margin-bottom:14px;">REGISTRAR CAMIÓN</div>
+        <div class="fg fg4">
+          <div class="ff"><label>FECHA</label><input class="fi" type="date" id="cc-fecha"></div>
+          <div class="ff"><label>PROVEEDOR <span style="color:var(--text3);font-size:9px;">— Agregá desde Finanzas → Proveedores</span></label>
+            <div style="display:flex;gap:6px;">
+              <select class="fi" id="cc-prov" onchange="setCamAdel()" style="flex:1;"></select>
+              <button type="button" onclick="location.href='fuegos-ya-finanzas.html'" style="padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text3);cursor:pointer;font-size:11px;white-space:nowrap;">+ PROV</button>
+            </div>
+          </div>
+          <div class="ff"><label>PATENTE / ID</label><input class="fi" id="cc-pat" placeholder="ABC-123"></div>
+          <div class="ff"><label>DEPÓSITO DESTINO</label>
+            <select class="fi" id="cc-dep">
+              <option value="tigre">TIGRE</option>
+              <option value="pilar">PILAR</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">CONTENIDO DEL CAMIÓN</div>
+        <div id="cc-cargas"></div>
+        <button type="button" onclick="addCarga()" style="width:100%;padding:8px;border:1px dashed var(--border);border-radius:8px;background:transparent;color:var(--text2);font-family:var(--mono);font-size:11px;cursor:pointer;margin-bottom:14px;">+ AGREGAR PRODUCTO</button>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">DESCARGA</div>
+        <div class="fg fg2" style="margin-bottom:14px;">
+          <div class="ff"><label>EMPLEADOS QUE DESCARGARON</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;" id="dc-emps">
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;"><input type="checkbox" value="eze" checked onchange="calcDcDist()"> EZE MESSI</label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;"><input type="checkbox" value="charly" onchange="calcDcDist()"> CHARLY</label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;"><input type="checkbox" value="german" onchange="calcDcDist()"> GERMAN</label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;"><input type="checkbox" value="fer" onchange="calcDcDist()"> FER</label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;"><input type="checkbox" value="omar" onchange="calcDcDist()"> OMAR</label>
+            </div>
+          </div>
+          <div class="ff"><label>DISTRIBUCIÓN CALCULADA</label>
+            <div id="dc-dist-inv" style="font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:6px;line-height:1.8;"></div>
+          </div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">CONTROL DE CALIDAD</div>
+        <div class="fg fg3">
+          <div class="ff"><label>CALIDAD</label>
+            <select class="fi" id="cc-cal">
+              <option value="buena">Buena — conforme</option>
+              <option value="regular">Regular — con obs.</option>
+              <option value="mala">Mala — no conforme</option>
+            </select>
+          </div>
+          <div class="ff"><label>REVISADO POR</label>
+            <select class="fi" id="cc-rev">
+              <option value="eze">EZE MESSI</option>
+              <option value="nico">NICO</option>
+              <option value="agus">AGUS</option>
+            </select>
+          </div>
+          <div class="ff"><label>OBSERVACIONES</label><input class="fi" id="cc-obs" placeholder="Tamaño, humedad, mezcla de maderas..."></div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">LIQUIDACIÓN</div>
+        <div class="fg fg4">
+          <div class="ff"><label>TOTAL CAMIÓN</label><input class="fi" type="number" id="cc-total" placeholder="$0" oninput="calcCamSaldo()"></div>
+          <div class="ff"><label>YA ADELANTADO</label><input class="fi" type="number" id="cc-adel" placeholder="$0" readonly style="color:var(--amber);" oninput="calcCamSaldo()"></div>
+          <div class="ff"><label>SALDO A PAGAR</label><input class="fi" id="cc-saldo" readonly style="color:var(--amber);font-weight:600;"></div>
+          <div class="ff"><label>CAJA DE PAGO</label>
+            <select class="fi" id="cc-caja">
+              <option value="pendiente">Dejar pendiente</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="confirmarCam('recibido')">✓ ACEPTAR CAMIÓN</button>
+          <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red);" onclick="confirmarCam('rechazado')">✕ RECHAZAR</button>
+          <button class="btn btn-ghost" onclick="toggleFormCam()">CANCELAR</button>
+        </div>
+      </div>
+
+      <div class="card" id="cam-pend-card" style="display:none;margin-bottom:16px;">
+        <div class="card-header">
+          <div class="card-title">PAGOS PENDIENTES — CAMIONES</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--amber);" id="cam-pend-total"></div>
+        </div>
+        <div id="cam-pend-lista"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">HISTORIAL DE CAMIONES</div></div>
+        <div id="cam-hist"></div>
+      </div>
+    </div>
+
+    <!-- PRODUCCIÓN -->
+    <div class="vista" id="tab-prod">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-family:var(--display);font-size:22px;letter-spacing:1px;">PRODUCCIÓN DIARIA</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px;" id="prod-sub"></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn btn-ghost btn-sm" onclick="mvFecha(-1)">‹</button>
+          <input type="date" id="prod-fecha" class="fi" style="width:160px;">
+          <button class="btn btn-ghost btn-sm" onclick="mvFecha(1)">›</button>
+        </div>
+      </div>
+      <div class="form-card">
+        <!-- Empleado y Depósito -->
+        <div class="fg fg2" style="margin-bottom:12px;">
+          <div class="ff"><label>EMPLEADO</label>
+            <select class="fi" id="pe-emp"></select>
+          </div>
+          <div class="ff"><label>DEPÓSITO</label>
+            <select class="fi" id="pe-dep">
+              <option value="tigre">TIGRE</option>
+              <option value="pilar">PILAR</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Líneas de productos -->
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">PRODUCTOS PRODUCIDOS</div>
+        <div id="pe-lineas"></div>
+        <button class="btn btn-ghost btn-sm" onclick="agregarLineaProd()" style="margin-bottom:12px;">+ Agregar producto</button>
+
+        <!-- Jornal preview -->
+        <div id="pe-jornal-preview" style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--text3);">JORNAL TOTAL</span>
+            <span style="font-family:var(--display);font-size:22px;color:var(--green);" id="pe-jornal-total">$0</span>
+          </div>
+          <div id="pe-jornal-detalle" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px;"></div>
+        </div>
+
+        <button class="btn btn-primary" onclick="regProd()">REGISTRAR PRODUCCIÓN</button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">DÍA ACTUAL</div>
+          <div id="prod-fecha-lbl" style="font-family:var(--mono);font-size:11px;color:var(--text3);"></div>
+        </div>
+        <div id="prod-dia-tabla"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">HISTÓRICO</div></div>
+        <div id="prod-hist-tabla"></div>
+      </div>
+    </div>
+
+    <!-- MOVIMIENTOS -->
+    <div class="vista" id="tab-mov">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:var(--display);font-size:22px;letter-spacing:1px;">MOVIMIENTOS TIGRE ↔ PILAR</div>
+      </div>
+      <div class="form-card">
+        <div class="fg fg3">
+          <div class="ff"><label>FECHA</label><input class="fi" type="date" id="tm-fecha"></div>
+          <div class="ff"><label>DIRECCIÓN</label>
+            <select class="fi" id="tm-dir">
+              <option value="tigre">TIGRE → PILAR</option>
+              <option value="pilar">PILAR → TIGRE</option>
+            </select>
+          </div>
+          <div class="ff"><label>NOTAS</label><input class="fi" id="tm-notas" placeholder="Referencia, patente..."></div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">PRODUCTOS A MOVER</div>
+        <div id="tm-items"></div>
+        <button type="button" onclick="addMovItem()" style="width:100%;padding:8px;border:1px dashed var(--border);border-radius:8px;background:transparent;color:var(--text2);font-family:var(--mono);font-size:11px;cursor:pointer;margin-bottom:12px;">+ AGREGAR PRODUCTO</button>
+        <button class="btn btn-primary" onclick="regMov()">REGISTRAR MOVIMIENTO</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">HISTORIAL</div></div>
+        <div id="mov-hist"></div>
+      </div>
+    </div>
+
+    <!-- COSTOS -->
+    <div class="vista" id="tab-costos">
+      <!-- DÓLAR BLUE -->
+      <div style="display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;">
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;">DÓLAR BLUE</div>
+          <div style="font-family:var(--display);font-size:28px;color:var(--green);" id="dolar-blue-val">—</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);" id="dolar-blue-fecha">Sin datos</div>
+        </div>
+        <div style="margin-left:auto;">
+          <button onclick="fetchDolarBlue()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:6px 12px;font-family:var(--mono);font-size:11px;cursor:pointer;">↻ Actualizar</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:var(--display);font-size:22px;letter-spacing:1px;">COSTOS Y PRECIOS</div>
+        <button class="btn btn-primary btn-sm" onclick="agregarProductoCosto()">+ NUEVO PRODUCTO</button>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:16px;line-height:1.8;">
+        · Carbón/Leña y packaging se actualizan automáticamente con cada camión y entrada de bolsas.<br>
+        · MO viene de las tarifas de producción — modificala en RRHH y se actualiza acá solo.<br>
+        · <span style="color:var(--blue);">Precio Particular</span> y <span style="color:var(--green);">Precio Mayorista</span> — modificalos acá y se aplican a todas las ventas nuevas del sistema.
+      </div>
+      <div id="costos-content"></div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+
+// Lee cajas y proveedores de CONFIG dinámicamente
+function getCajasConfig(){
+  try{
+    var cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    return {
+      pesos: cfg.cajas&&cfg.cajas.pesos ? cfg.cajas.pesos : [],
+      usd: cfg.cajas&&cfg.cajas.usd ? cfg.cajas.usd : [],
+      proveedores: cfg.cajas&&cfg.cajas.proveedores ? cfg.cajas.proveedores : [],
+      provs: cfg.proveedores||[]
+    };
+  }catch(e){return {pesos:[],usd:[],proveedores:[],provs:[]};}
+}
+const MP=[
+  {id:'QBC',  nombre:'Carbón Quebracho Blanco', u:'kg', deps:['tigre']},
+  {id:'CARB', nombre:'Carbonilla',              u:'kg', deps:['tigre'], auto:true},
+  {id:'LQB',  nombre:'Leña Quebracho Blanco',   u:'kg', deps:['tigre','pilar']},
+  {id:'LQC',  nombre:'Leña Quebracho Colorado', u:'kg', deps:['tigre','pilar']},
+  {id:'LESP', nombre:'Leña Espinillo',          u:'kg', deps:['tigre','pilar']},
+];
+// PT se construye dinámicamente desde Config (fy_config_v1.productos)
+function buildPT(){
+  var cfg_prods = null;
+  try{
+    var cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    if(cfg.productos&&cfg.productos.length) cfg_prods=cfg.productos.filter(function(p){return p.activo!==false;});
+  }catch(ex){}
+  if(cfg_prods){
+    var LENA_MP_MAP={'LQB10':'LQB','LQC10':'LQC','LESP10':'LESP'};
+    var MP_DEF={'fy':'QBC','personalizada':'QBC','lena':'LQB','distribuido':null};
+    var DEP_DEF={'fy':'tigre','personalizada':'tigre','lena':'pilar','distribuido':'tigre'};
+    return cfg_prods.map(function(p){
+      var mp=LENA_MP_MAP[p.sku]||MP_DEF[p.linea]||'QBC';
+      return {
+        sku:p.sku, n:p.nombre,
+        kg:p.kg||0,
+        mp:p.mp||mp, pkg:p.pkgId||null,
+        deps:['tigre','pilar'],
+        dist:p.linea==='distribuido'
+      };
+    });
+  }
+  // Fallback hardcodeado
+  return [
+  {sku:'BB10', n:'Bolsa 10kg Premium',    kg:10,  mp:'QBC', pkg:'PKG-BB10',  dep:'tigre'},
+  {sku:'B8',   n:'Bolsa 8kg',            kg:8, mp:'QBC', pkg:'PKG-B8',    dep:'tigre'},
+  {sku:'B4',   n:'Bolsa 4kg',            kg:3.8, mp:'QBC', pkg:'PKG-B4',    dep:'tigre'},
+  {sku:'FY',   n:'Caja FY 4kg',          kg:3.8, mp:'QBC', pkg:'PKG-B4',    dep:'tigre'},
+  {sku:'PA10', n:'Parrilla 10kg',        kg:10,  mp:'QBC', pkg:'PKG-PA10',  dep:'tigre'},
+  {sku:'PA8',  n:'Parrilla 8kg',         kg:8,   mp:'QBC', pkg:'PKG-PA8',   dep:'tigre'},
+  {sku:'LQB10',n:'Leña QB 10kg',         kg:10,  mp:'LQB', pkg:'PKG-LQB10', dep:'pilar'},
+  {sku:'LQC10',n:'Leña QC 10kg',         kg:10,  mp:'LQC', pkg:'PKG-LQC10', dep:'pilar'},
+  {sku:'LESP10',n:'Leña Espinillo 10kg', kg:10,  mp:'LESP',pkg:'PKG-LQB10', dep:'pilar'},
+  {sku:'B4CC', n:'Cuatro Carnes 4kg',    kg:3.8, mp:'QBC', pkg:'PKG-B4CC',  dep:'tigre'},
+  {sku:'B8CC', n:'Cuatro Carnes 8kg',    kg:8, mp:'QBC', pkg:'PKG-B8CC',  dep:'tigre'},
+  {sku:'B4SOM',n:'Sommelier 4kg',        kg:3.8, mp:'QBC', pkg:'PKG-B4SOM', dep:'tigre'},
+  {sku:'B4AL', n:'Al Fuego 4kg',         kg:3.8, mp:'QBC', pkg:'PKG-B4AL',  dep:'tigre'},
+  {sku:'B4CAR',n:'Carlota 4kg',          kg:3.8, mp:'QBC', pkg:'PKG-B4CAR', dep:'tigre'},
+  {sku:'B8PAR',n:'Parmegiano 8kg',       kg:8, mp:'QBC', pkg:'PKG-B8PAR', dep:'tigre'},
+  {sku:'B4RAF',n:'Estancia Rafaela 4kg', kg:3.8, mp:'QBC', pkg:'PKG-B4RAF', dep:'tigre'},
+  {sku:'B4CJ', n:'Cabaña Juramento 4kg', kg:3.8, mp:'QBC', pkg:'PKG-B4CJ',  dep:'tigre'},
+  {sku:'B8CJ', n:'Cabaña Juramento 8kg', kg:8, mp:'QBC', pkg:'PKG-B8CJ',  dep:'tigre'},
+  {sku:'B10CABARJ',n:'Cabañas Argentinas 10kg',kg:10,mp:'QBC',pkg:'PKG-B10CABARJ',dep:'tigre'},
+  {sku:'B4CABARJ',n:'Cabañas Argentinas 4kg',kg:3.8,mp:'QBC',pkg:'PKG-B4CABARJ',dep:'tigre'},
+  {sku:'MP',   n:'Maderitas Premium',    kg:0, mp:null, pkg:null, dep:'tigre', dist:true},
+  {sku:'ALA',  n:'Atado de Sauce/Álamo', kg:0, mp:null, pkg:null, dep:'tigre', dist:true},
+  {sku:'XS',   n:'Iniciador FY XS',      kg:0, mp:null, pkg:null, dep:'tigre', dist:true},
+  {sku:'LMX',  n:'Lumix Mini (4u)',      kg:0, mp:null, pkg:null, dep:'tigre', dist:true},
+  ];
+}
+var PT=buildPT();
+const PKG=[
+  // MIGUEL QUEGLAS — con IVA
+  {id:'PKG-B4',  n:'Bolsa 4kg',              prov:'prov2', iva:true,  dep:'tigre'},
+  {id:'PKG-B8',  n:'Bolsa 8kg',              prov:'prov2', iva:true,  dep:'tigre'},
+  // DANIEL VIDELA — con IVA
+  {id:'PKG-PA8', n:'Carbón Parrilla 8kg',    prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-PA10',n:'Carbón Parrilla 10kg',   prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B4CC',n:'Cuatro Carnes 4kg',      prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B8CC',n:'Cuatro Carnes 8kg',      prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B4SOM',n:'Sommelier 4kg',         prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B4AL', n:'Al Fuego 4kg',          prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B4CAR',n:'Carlota 4kg',           prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B8PAR',n:'Parmegiano 8kg',        prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B4RAF',n:'Estancia Rafaela 4kg',  prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B4CJ', n:'Cabaña Juramento 4kg',  prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B8CJ', n:'Cabaña Juramento 8kg',  prov:'prov1', iva:true,  dep:'tigre'},
+  {id:'PKG-B10CABARJ',n:'Cabañas Argentinas 10kg',prov:'prov1',iva:true,dep:'tigre'},
+  {id:'PKG-B4CABARJ', n:'Cabañas Argentinas 4kg', prov:'prov1',iva:true,dep:'tigre'},
+  // AGUSTÍN MOGLIA — negro sin IVA
+  {id:'PKG-BB10', n:'Carbón Sel. a mano 10kg',prov:'prov3', iva:false, dep:'tigre'},
+  {id:'PKG-BB3',  n:'Carbón Sel. a mano 3kg', prov:'prov3', iva:false, dep:'tigre'},
+  {id:'PKG-LQB10',n:'Leña QB 10kg',           prov:'prov3', iva:false, dep:'pilar'},
+  {id:'PKG-LQC10',n:'Leña QC 10kg',           prov:'prov3', iva:false, dep:'pilar'},
+  // CÉSAR — con IVA
+  {id:'PKG-FY',  n:'Caja FY 4kg',             prov:'prov4', iva:true,  dep:'tigre'},
+];
+const PROVS_PKG={
+  prov1:{n:'DANIEL VIDELA',   d:'Personalizadas + Parrilla · con IVA',     c:'var(--accent2)'},
+  prov2:{n:'MIGUEL QUEGLAS',  d:'Bolsa 4kg y 8kg · con IVA',               c:'var(--blue)'},
+  prov3:{n:'AGUSTÍN MOGLIA',  d:'Sel. a mano + Leña · sin IVA (negro)',     c:'var(--purple)'},
+  prov4:{n:'CÉSAR',           d:'Caja FY 4kg · con IVA',                    c:'var(--gold)'},
+};
+// Empleados dinámicos — se leen de Config (fy_config_v1)
+function getEMPS(){
+  try{
+    var cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    var emps=cfg.empleados||[];
+    if(emps.length) return emps.filter(function(e){return e.activo!==false;}).map(function(e){return {id:e.id,n:e.nombre};});
+  }catch(ex){}
+  // Fallback hardcodeado
+  return [
+    {id:'eze',n:'EZE MESSI'},{id:'charly',n:'CHARLY'},
+    {id:'german',n:'GERMAN'},{id:'fer',n:'FER'},{id:'omar',n:'OMAR'},
+    {id:'mauro',n:'MAURO'},{id:'maxi',n:'MAXI'},{id:'nacho',n:'NACHO'},
+    {id:'profe',n:'EL PROFE'},{id:'pachu',n:'PACHU'},{id:'angel',n:'ANGEL'},
+    {id:'dani',n:'DANI'},{id:'kevin',n:'KEVIN'},{id:'yerba',n:'YERBA'},{id:'bambino',n:'BAMBINO'},
+  ];
+}
+var EMPS=getEMPS();
+// Tarifa por SKU (pesos por bolsa)
+const TARIFAS={
+  'FY':600,
+  'B4':180,'B8':260,'BB10':390,'BB3':260,
+  'PA8':260,'PA10':260,
+  'LQB10':330,'LQC10':330,'LESP10':330,
+  // Personalizadas — mismo precio que su equivalente por kg
+  'B4CC':180,'B4SOM':180,'B4AL':180,'B4CAR':180,'B4RAF':180,'B4CJ':180,'B4CABARJ':180,
+  'B8CC':260,'B8PAR':260,'B8CJ':260,
+  'B10CABARJ':260,
+};
+function getTarifa(sku){
+  try{
+    var cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    var prod=(cfg.productos||[]).find(function(p){return p.sku===sku;});
+    if(prod&&prod.mo) return prod.mo;
+  }catch(ex){}
+  var FALLBACK={FY:600,B4:180,B8:260,BB10:390,BB3:260,PA8:260,PA10:260,LQB10:330,LQC10:330,LESP10:330};
+  return FALLBACK[sku]||180;
+}
+
+let inv={stock:{tigre:{mp:{},pkg:{},pt:{}},pilar:{mp:{},pkg:{},pt:{}}},
+  costosProductos:{}, // {sku: {mo, otros, precioPartic, precioMay}}
+  camiones:[],pkgEntradas:[],produccion:[],movimientos:[],pagPend:[],
+  dolarBlue: null,          // {venta, compra, fecha}
+  costos:{
+    desperdicio:15,          // % default carbonilla
+    precioCarbonilla:30,     // $ por kg carbonilla
+    promedios:{},            // {QBC:{kg,totalPesos}, LQB:{...}, ...} por proveedor
+    promediosGlobal:{},      // {QBC:{kg,totalPesos}, ...} global
+    stockCarbonilla:0,       // kg acumulados
+  }
+};
+let cargas=[];
+let deps={mp:'tigre',pt:'tigre',pkg:'tigre'};
+let fprod=new Date().toISOString().split('T')[0];
+
+function fmt(n){return'$'+Math.round(n||0).toLocaleString('es-AR');}
+function fmtN(n){return Math.round(n||0).toLocaleString('es-AR');}
+function toast(msg,e){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';t.style.borderColor=e?'var(--red)':'var(--border2)';clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500);}
+function hoy(){return new Date().toISOString().split('T')[0];}
+function go(m){location.href='fuegos-ya-'+m+'.html';}
+function save(){try{localStorage.setItem('fy_stock_v1',JSON.stringify(inv));}catch(e){}}
+function load(){
+  try{const s=localStorage.getItem('fy_stock_v1');if(s){const d=JSON.parse(s);inv={...inv,...d};if(d.costos)inv.costos={...inv.costos,...d.costos};}}catch(e){}
+  ['tigre','pilar'].forEach(d=>{if(!inv.stock[d])inv.stock[d]={mp:{},pkg:{},pt:{}};['mp','pkg','pt'].forEach(t=>{if(!inv.stock[d][t])inv.stock[d][t]={};});});
+  if(!inv.camiones)inv.camiones=[];if(!inv.pkgEntradas)inv.pkgEntradas=[];
+  if(!inv.produccion)inv.produccion=[];if(!inv.movimientos)inv.movimientos=[];
+  if(!inv.pagPend)inv.pagPend=[];
+  if(!inv.costos)inv.costos={desperdicio:15,precioCarbonilla:30,promedios:{},promediosGlobal:{},stockCarbonilla:0};
+  if(!inv.costos.promedios)inv.costos.promedios={};
+  if(!inv.costos.promediosGlobal)inv.costos.promediosGlobal={};
+  if(!inv.costosProductos)inv.costosProductos={};
+}
+function setTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.vista').forEach(v=>v.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  const fn={mp:renderMP,pt:renderPT,pkg:renderPKG,cam:renderCamFull,prod:renderProd,mov:renderMov,costos:renderCostos};
+  if(fn[tab])fn[tab]();
+  if(tab==='cam')renderCostos();
+}
+function setDep(mod,dep,btn){
+  deps[mod]=dep;
+  const c=btn.closest('.dep-tabs');
+  c.querySelectorAll('.dep-tab').forEach(b=>{b.className=b.className.replace(/active-[tp]/g,'').trim();});
+  btn.classList.add(dep==='tigre'?'active-t':'active-p');
+  if(mod==='mp')renderMP();else if(mod==='pt')renderPT();else renderPKG();
+}
+function cqty(n,hi,lo){return n>=hi?'ok':n>=lo?'bajo':'critico';}
+
+// STOCK ROW HELPER
+function srowHtml(dep,tipo,id,nombre,sub,qty,unit,deltaAdj){
+  return`<div class="srow">
+    <div><div class="sname">${nombre}</div><div class="sid">${sub}</div></div>
+    <div><div class="sqty ${cqty(qty,tipo==='mp'?5000:tipo==='pt'?200:1000,tipo==='mp'?1000:tipo==='pt'?50:200)}">${fmtN(qty)}</div><div class="sunit">${unit}</div></div>
+    <div class="sctrl">
+      <button onclick="adjSt('${dep}','${tipo}','${id}',${-deltaAdj})">−</button>
+      <input type="number" value="${qty}" onchange="setSt('${dep}','${tipo}','${id}',parseInt(this.value)||0)" onblur="save();toast('Guardado ✓')">
+      <button onclick="adjSt('${dep}','${tipo}','${id}',${deltaAdj})">+</button>
+    </div>
+  </div>`;
+}
+function adjSt(dep,tipo,id,delta){inv.stock[dep][tipo][id]=Math.max(0,(inv.stock[dep][tipo][id]||0)+delta);save();if(tipo==='mp')renderMP();else if(tipo==='pt')renderPT();else renderPKG();}
+function setSt(dep,tipo,id,val){inv.stock[dep][tipo][id]=Math.max(0,val);}
+
+// MATERIA PRIMA
+function renderMP(){PT=buildPT();
+  const dep=deps.mp;const st=inv.stock[dep];
+  const items=MP.filter(m=>m.deps.includes(dep));
+  const color=dep==='tigre'?'var(--accent2)':'var(--blue)';
+  const total=items.reduce((s,m)=>s+(st.mp[m.id]||0),0);
+  let html=`<div class="card">
+    <div class="card-header">
+      <div class="card-title" style="color:${color};">${dep.toUpperCase()}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">${fmtN(total)} KG TOTAL</div>
+    </div>
+    <div class="srow" style="background:var(--surface2);padding:6px 14px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">MATERIA PRIMA</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">STOCK (KG)</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">AJUSTAR (+/- 1000kg)</div>
+    </div>`;
+  // MP principal (sin carbonilla)
+  items.filter(m=>!m.auto).forEach(m=>{
+    html+=srowHtml(dep,'mp',m.id,m.nombre,m.id,st.mp[m.id]||0,'KG',1000);
+  });
+
+  // Carbonilla separada al fondo (solo Tigre)
+  const carbItems=items.filter(m=>m.auto);
+  if(carbItems.length){
+    html+='<div style="padding:8px 16px;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:1px solid var(--border);"><div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">CARBONILLA — generada automáticamente</div></div>';
+    carbItems.forEach(m=>{
+      html+=srowHtml(dep,'mp',m.id,m.nombre,'Se genera al recibir carbón · 15% del camión',st.mp[m.id]||0,'KG',100);
+    });
+  }
+  if(dep==='tigre'){
+    const lena=['LQB','LQC','LESP'].reduce((s,id)=>s+(st.mp[id]||0),0);
+    if(lena>0) html+=`<div style="padding:10px 16px;font-family:var(--mono);font-size:10px;color:var(--text3);">ℹ La leña suelta en Tigre también es producto terminado (venta a granel directa)</div>`;
+  }
+  html+='</div>';
+  document.getElementById('mp-body').innerHTML=html;
+}
+
+// PRODUCTO TERMINADO
+function renderPT(){renderDistStock();
+  const dep=deps.pt;const st=inv.stock[dep];
+  const color=dep==='tigre'?'var(--accent2)':'var(--blue)';
+  const totalBolsas=Object.values(st.pt).reduce((s,v)=>s+v,0);
+
+  const SECCIONES=[
+    {titulo:'LÍNEA FUEGOS YA — CARBÓN', skus:['FY','B4','B8','PA8','PA10','BB10','BB3']},
+    {titulo:'LEÑA', skus:['LQB10','LQC10','LESP10']},
+    {titulo:'PRODUCTOS DISTRIBUIDOS', skus:['MP','ALA','XS','LMX']},
+    {titulo:'PERSONALIZADAS — 4KG', skus:['B4CC','B4SOM','B4AL','B4CAR','B4RAF','B4CJ','B4CABARJ']},
+    {titulo:'PERSONALIZADAS — 8KG', skus:['B8CC','B8PAR','B8CJ']},
+    {titulo:'PERSONALIZADAS — 10KG', skus:['B10CABARJ']},
+  ];
+
+  let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div style="font-family:var(--display);font-size:16px;color:${color};">${dep.toUpperCase()}</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">${fmtN(totalBolsas)} BOLSAS TOTAL</div>
+  </div>`;
+
+  SECCIONES.forEach(sec=>{
+    const items=sec.skus.map(sku=>PT.find(p=>p.sku===sku)).filter(Boolean);
+    // Show all products in both depots — Pilar is also a distribution point
+    if(!items.length) return;
+    html+=`<div class="card" style="margin-bottom:12px;">
+      <div class="sec-label">${sec.titulo}</div>
+      <div class="srow" style="padding:6px 14px;background:var(--surface2);">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">PRODUCTO</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">STOCK (BOLSAS)</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">AJUSTAR</div>
+      </div>`;
+    items.forEach(p=>html+=srowHtml(dep,'pt',p.sku,p.n,p.sku+' · '+p.kg+'kg/bolsa',st.pt[p.sku]||0,'BOLSAS',10));
+    html+='</div>';
+  });
+
+  document.getElementById('pt-body').innerHTML=html;
+}
+
+// PACKAGING
+function autoFillPkgPrecio(){
+  const pkgId=document.getElementById('pb-tipo')?.value;
+  if(!pkgId) return;
+
+  // 1. Buscar último precio real pagado
+  const historial=inv.pagPend?.filter(p=>p.pkgId===pkgId).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  if(historial&&historial.length>0&&historial[0].cant>0){
+    const precioUnit=historial[0].precio||Math.round(historial[0].total/historial[0].cant);
+    const ivaFueIncluido=historial[0].iva;
+    // Mostrar sin IVA
+    document.getElementById('pb-precio').value=precioUnit;
+    calcPbTotal();
+    return;
+  }
+
+  // 2. Usar precio del catálogo como default
+  const prod=PRODUCTOS_COSTO.find(p=>p.pkgId===pkgId);
+  if(prod){
+    if(prod.pkgUSD){
+      const blue=getDolarBlue()||(inv.costos?.blueActual)||1200;
+      const precioARS=Math.round(prod.pkgUSD*blue);
+      document.getElementById('pb-precio').value=precioARS;
+      document.getElementById('pb-iva').value='no'; // Moglia es negro
+    } else if(prod.pkgARS){
+      document.getElementById('pb-precio').value=prod.pkgARS;
+      document.getElementById('pb-iva').value=prod.pkgIVA?'si':'no';
+    }
+    calcPbTotal();
+  }
+}
+
+function filterPkgTipo(){
+  const prov=document.getElementById('pb-prov').value;
+  const tipoSel=document.getElementById('pb-tipo');
+  tipoSel.innerHTML='';
+  PKG.filter(p=>p.prov===prov).forEach(p=>tipoSel.innerHTML+=`<option value="${p.id}">${p.n}</option>`);
+  // Set IVA default
+  const iva=PKG.filter(p=>p.prov===prov)[0]?.iva;
+  const ivaEl=document.getElementById('pb-iva');
+  if(ivaEl) ivaEl.value=iva?'si':'no';
+  autoFillPkgPrecio();
+}
+function calcPbTotal(){
+  const precio=parseFloat(document.getElementById('pb-precio').value)||0;
+  const cant=parseFloat(document.getElementById('pb-cant').value)||0;
+  const iva=document.getElementById('pb-iva').value==='si';
+  document.getElementById('pb-total').value=fmt(precio*cant*(iva?1.21:1));
+}
+function toggleFormBolsas(){const f=document.getElementById('form-bolsas');f.style.display=f.style.display==='none'?'block':'none';}
+function confirmarBolsas(){
+  const prov=document.getElementById('pb-prov').value;
+  const pkgId=document.getElementById('pb-tipo').value;
+  const cant=parseInt(document.getElementById('pb-cant').value)||0;
+  const dep=document.getElementById('pb-dep').value;
+  const precio=parseFloat(document.getElementById('pb-precio').value)||0;
+  const iva=document.getElementById('pb-iva').value==='si';
+  const fecha=document.getElementById('pb-fecha').value||hoy();
+  const notas=document.getElementById('pb-notas').value.trim();
+  if(!cant){toast('Ingresá la cantidad',true);return;}
+  const total=precio*cant*(iva?1.21:1);
+  // Sumar stock
+  inv.stock[dep].pkg[pkgId]=(inv.stock[dep].pkg[pkgId]||0)+cant;
+  // Generar pago pendiente
+  const pkg=PKG.find(p=>p.id===pkgId);
+  const provData=PROVS_PKG[prov]||{n:prov};
+  inv.pagPend.push({id:'pp_'+Date.now(),tipo:'pkg',fecha,prov,provNombre:provData.n,
+    pkgId,pkgNombre:pkg?.n||pkgId,cant,precio,total,iva,dep,notas,pagado:false});
+  // Registrar en finanzas como pendiente
+  try{
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    if(!fin.movimientos)fin.movimientos=[];
+    fin.movimientos.unshift({id:'mpkg_'+Date.now(),fecha,
+      concepto:'[PEND] '+provData.n+' — '+(pkg?.n||pkgId)+' x'+cant,
+      monto:total,tipo:'salida',caja:'pendiente',cat:'proveedor',notas});
+    localStorage.setItem('fy_finanzas',JSON.stringify(fin));
+  }catch(e){}
+  save();toggleFormBolsas();renderPKG();toast('Entrada registrada — pago pendiente generado');
+}
+function renderPKG(){
+  const dep=deps.pkg;const st=inv.stock[dep];
+  const color=dep==='tigre'?'var(--accent2)':'var(--blue)';
+
+  const SECCIONES_PKG=[
+    {titulo:'CAJA FY 4KG',                prov:'prov4', skus:['PKG-FY']},
+    {titulo:'LÍNEA FUEGOS YA — BOLSAS',   prov:'prov2', skus:['PKG-B4','PKG-B8']},
+    {titulo:'PARRILLA',                   prov:'prov1', skus:['PKG-PA8','PKG-PA10']},
+    {titulo:'SELECCIONADO A MANO',        prov:'prov3', skus:['PKG-BB10','PKG-BB3']},
+    {titulo:'LEÑA',                       prov:'prov3', skus:['PKG-LQB10','PKG-LQC10']},
+    {titulo:'PERSONALIZADAS — 4KG',       prov:'prov1', skus:['PKG-B4CC','PKG-B4SOM','PKG-B4AL','PKG-B4CAR','PKG-B4RAF','PKG-B4CJ','PKG-B4CABARJ']},
+    {titulo:'PERSONALIZADAS — 8KG',       prov:'prov1', skus:['PKG-B8CC','PKG-B8PAR','PKG-B8CJ']},
+    {titulo:'PERSONALIZADAS — 10KG',      prov:'prov1', skus:['PKG-B10CABARJ']},
+  ];
+
+  let html='';
+  SECCIONES_PKG.forEach(sec=>{
+    const items=sec.skus.map(id=>PKG.find(p=>p.id===id)).filter(Boolean);
+    if(!items.length) return;
+    const pData=PROVS_PKG[sec.prov]||{n:sec.prov,d:'',c:'var(--text2)'};
+    const ivaLabel=items[0]?.iva?'CON FACTURA + IVA 21%':'SIN FACTURA (negro)';
+    html+=`<div class="card" style="margin-bottom:12px;">
+      <div class="sec-label">${sec.titulo}</div>
+      <div style="padding:6px 16px 8px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+        <span style="font-family:var(--mono);font-size:10px;color:${pData.c};font-weight:700;">${pData.n}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text3);">${pData.d}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text3);">·</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text3);">${ivaLabel}</span>
+      </div>
+      <div class="srow" style="padding:6px 14px;">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">BOLSA</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">STOCK</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">AJUSTAR (+/- 100)</div>
+      </div>`;
+    items.forEach(p=>html+=srowHtml(dep,'pkg',p.id,p.n,p.id,st.pkg[p.id]||0,'UNIDADES',100));
+    html+='</div>';
+  });
+
+  document.getElementById('pkg-body').innerHTML=html||'<div style="text-align:center;padding:20px;color:var(--text3);">Sin packaging</div>';
+
+  // Pagos pendientes
+  const pends=inv.pagPend.filter(p=>p.tipo==='pkg'&&!p.pagado);
+  const totalP=pends.reduce((s,p)=>s+p.total,0);
+  document.getElementById('pkg-total-pend').textContent=pends.length?pends.length+' pendientes · '+fmt(totalP):'Todo pagado ✓';
+  document.getElementById('pkg-pend-lista').innerHTML=pends.length?pends.map(p=>`
+    <div class="pend-row">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">${p.fecha}</div>
+      <div style="font-weight:500;">${p.provNombre} — ${p.pkgNombre}</div>
+      <div style="font-family:var(--mono);">${fmtN(p.cant)} u.</div>
+      <div style="font-family:var(--mono);font-weight:600;color:var(--amber);">${fmt(p.total)}</div>
+      <div>${p.iva?'<span class="badge b-blue">IVA</span>':'<span class="badge b-red">NEGRO</span>'}</div>
+      <div style="display:flex;gap:4px;">
+        <button onclick="pagarPend('${p.id}','pkg')" class="btn btn-primary btn-sm">PAGAR</button>
+        <button onclick="elimPend('${p.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;">✕</button>
+      </div>
+    </div>`).join('')
+    :'<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px;">Sin pagos pendientes</div>';
+}
+
+
+function pagarPend(id,tipo){
+  const p=inv.pagPend.find(x=>x.id===id);if(!p)return;
+  const caja=prompt('¿De qué caja pagás?\nefectivo-tigre\nfinanciera\ngalicia-srl','efectivo-tigre');
+  if(!caja)return;
+  p.pagado=true;
+  try{
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    if(!fin.cajas)fin.cajas={};if(!fin.movimientos)fin.movimientos=[];
+    fin.cajas[caja]=(fin.cajas[caja]||0)-p.total;
+    fin.movimientos.unshift({id:'mp2_'+Date.now(),fecha:hoy(),
+      concepto:'Pago '+(tipo==='pkg'?'bolsas — '+(p.pkgNombre||''):'camión — '+(p.desc||'')),
+      monto:p.total,tipo:'salida',caja,cat:'proveedor'});
+    localStorage.setItem('fy_finanzas',JSON.stringify(fin));
+  }catch(e){}
+  save();if(tipo==='pkg')renderPKG();else renderCam();toast('Pago registrado');
+}
+function elimPend(id){inv.pagPend=inv.pagPend.filter(p=>p.id!==id);save();renderPKG();toast('Eliminado');}
+
+// CAMIONES
+function calcDcDist(){
+  const checks=[...document.querySelectorAll('#dc-emps input:checked')].map(c=>c.value);
+  const n=checks.length;
+  const kg=parseFloat(document.getElementById('cc-kg-total')?.textContent)||0;
+  // Get cargas kg for calculation
+  const kgTotal=cargas.reduce((s,c)=>s+c.kg,0);
+  const tipoMayor=cargas.length>0?(cargas[0].tipo==='carbon'?'carbon':'lena'):'carbon';
+  const tarifa=tipoMayor==='carbon'?10:9;
+  const total=kgTotal*tarifa;
+  if(!n||!kgTotal){document.getElementById('dc-dist-inv').textContent='Completá el contenido del camión primero';return;}
+  const ezeIdx=checks.indexOf('eze');
+  let html='';
+  checks.forEach(emp=>{
+    let monto;
+    const EZE_EXTRA=40000;
+    if(emp==='eze'&&ezeIdx>-1){
+      monto=EZE_EXTRA+Math.round((total-EZE_EXTRA)/n);
+    }else{
+      monto=Math.round(ezeIdx>-1?(total-EZE_EXTRA)/n:total/n);
+    }
+    const nombres={eze:'Eze',charly:'Charly',german:'German',fer:'Fer',omar:'Omar'};
+    html+=(nombres[emp]||emp)+': '+fmt(monto)+'\n';
+  });
+  document.getElementById('dc-dist-inv').textContent=html||'—';
+}
+
+function fillCamProvs(){
+  try{
+    const cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    // Read from config first, fallback to finanzas for backward compat
+    const provs=(cfg.proveedores&&cfg.proveedores.length)?cfg.proveedores:(fin.proveedores||[]);
+    const sel=document.getElementById('cc-prov');
+    sel.innerHTML='<option value="">— Seleccionar —</option>';
+    provs.forEach(function(p){sel.innerHTML+='<option value="'+p.id+'">'+p.nombre+'</option>';});
+    if(!provs.length)sel.innerHTML='<option value="">Sin proveedores. Agregá en CONFIG.</option>';
+  }catch(e){}
+}
+function setCamAdel(){
+  try{
+    const provId=document.getElementById('cc-prov').value;
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    const prov=(fin.proveedores||[]).find(p=>p.id===provId);
+    let adel=0;
+    if(prov){
+      const ta=prov.movimientos.filter(m=>m.tipo==='adelanto').reduce((s,m)=>s+m.monto,0);
+      const tr=prov.movimientos.filter(m=>m.tipo==='mercaderia'||m.tipo==='pago-final').reduce((s,m)=>s+m.monto,0);
+      adel=Math.max(0,ta-tr);
+    }
+    document.getElementById('cc-adel').value=adel||'';calcCamSaldo();
+  }catch(e){}
+}
+function toggleFormCam(){
+  const f=document.getElementById('form-cam');
+  if(f.style.display==='none'){
+    f.style.display='block';document.getElementById('cc-fecha').value=hoy();
+    cargas=[];addCarga();fillCamProvs();
+  }else{f.style.display='none';cargas=[];}
+}
+function addCarga(){cargas.push({tipo:'carbon',kg:0,precio:0});renderCargas();}
+function renderCargas(){
+  document.getElementById('cc-cargas').innerHTML=cargas.map((c,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:end;">
+      <div class="ff"><label>TIPO</label>
+        <select class="fi" onchange="cargas[${i}].tipo=this.value;calcCamSaldo()">
+          <option value="carbon" ${c.tipo==='carbon'?'selected':''}>CARBÓN QB</option>
+          <option value="lena-qb" ${c.tipo==='lena-qb'?'selected':''}>LEÑA QB</option>
+          <option value="lena-qc" ${c.tipo==='lena-qc'?'selected':''}>LEÑA QC</option>
+          <option value="lena-esp" ${c.tipo==='lena-esp'?'selected':''}>LEÑA ESPINILLO</option>
+        </select>
+      </div>
+      <div class="ff"><label>KG NETOS</label>
+        <input class="fi" type="number" value="${c.kg||''}" placeholder="0" id="carga-kg-${i}" onchange="cargas[${i}].kg=parseFloat(this.value)||0;calcCamSaldo();calcDcDist()" onblur="cargas[${i}].kg=parseFloat(this.value)||0;calcCamSaldo();calcDcDist()">
+      </div>
+      <div class="ff"><label>$ / KG</label>
+        <input class="fi" type="number" value="${c.precio||''}" placeholder="$0" id="carga-precio-${i}" onchange="cargas[${i}].precio=parseFloat(this.value)||0;calcCamSaldo()" onblur="cargas[${i}].precio=parseFloat(this.value)||0;calcCamSaldo()">
+      </div>
+      <div class="ff"><label>SUBTOTAL</label>
+        <input class="fi" id="carga-sub-${i}" value="${fmt(c.kg*c.precio)}" readonly style="color:var(--amber);">
+      </div>
+      <button onclick="cargas.splice(${i},1);renderCargas();calcCamSaldo()" style="padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;">✕</button>
+    </div>`).join('');
+}
+function calcCamSaldo(){
+  // Update subtotals without re-rendering cargas (would lose focus)
+  cargas.forEach((c,i)=>{
+    const kgEl=document.getElementById('carga-kg-'+i);
+    const prEl=document.getElementById('carga-precio-'+i);
+    if(kgEl) c.kg=parseFloat(kgEl.value)||c.kg;
+    if(prEl) c.precio=parseFloat(prEl.value)||c.precio;
+    // Update subtotal display
+    const subEl=document.getElementById('carga-sub-'+i);
+    if(subEl) subEl.value=fmt(c.kg*c.precio);
+  });
+  const tot=cargas.reduce((s,c)=>s+c.kg*c.precio,0);
+  const adel=parseFloat(document.getElementById('cc-adel').value)||0;
+  document.getElementById('cc-total').value=tot||'';
+  document.getElementById('cc-saldo').value=fmt(Math.max(0,tot-adel));
+}
+function confirmarCam(estado){
+  const provId=document.getElementById('cc-prov').value;
+  const fecha=document.getElementById('cc-fecha').value||hoy();
+  const pat=document.getElementById('cc-pat').value.trim();
+  const dep=document.getElementById('cc-dep').value;
+  const cal=document.getElementById('cc-cal').value;
+  const rev=document.getElementById('cc-rev').value;
+  const obs=document.getElementById('cc-obs').value.trim();
+  const tot=parseFloat(document.getElementById('cc-total').value)||0;
+  const adel=parseFloat(document.getElementById('cc-adel').value)||0;
+  const saldo=Math.max(0,tot-adel);
+  const caja=document.getElementById('cc-caja').value;
+  if(!cargas.length||!cargas[0].kg){toast('Ingresá al menos un producto',true);return;}
+  const cam={id:'cam_'+Date.now(),fecha,provId,pat,dep,
+    cargas:JSON.parse(JSON.stringify(cargas)),cal,rev,obs,tot,adel,saldo,caja,estado};
+  inv.camiones.unshift(cam);
+  if(estado==='recibido'){
+    cargas.forEach(c=>{
+      const mpId=c.tipo==='carbon'?'QBC':c.tipo==='lena-qb'?'LQB':c.tipo==='lena-qc'?'LQC':'LESP';
+      const esCarbonQBC=mpId==='QBC';
+      const kgNeto=esCarbonQBC?c.kg*(1-(inv.costos.desperdicio/100)):c.kg;
+      const kgCarb=esCarbonQBC?c.kg*(inv.costos.desperdicio/100):0;
+      // Stock MP — solo kg netos (vendibles) para carbón
+      inv.stock[dep].mp[mpId]=(inv.stock[dep].mp[mpId]||0)+kgNeto;
+      // Carbonilla — suma al stock de MP y al contador de costos
+      if(kgCarb>0){
+        inv.stock[dep].mp['CARB']=(inv.stock[dep].mp['CARB']||0)+kgCarb;
+        inv.costos.stockCarbonilla=(inv.costos.stockCarbonilla||0)+kgCarb;
+      }
+      // Actualizar promedios ponderados
+      const totalPesos=c.kg*c.precio;
+      // Por proveedor
+      const provKey=provId+'_'+mpId;
+      if(!inv.costos.promedios[provKey]) inv.costos.promedios[provKey]={kg:0,totalPesos:0,provId,mpId};
+      inv.costos.promedios[provKey].kg+=kgNeto;
+      inv.costos.promedios[provKey].totalPesos+=totalPesos;
+      // Global
+      if(!inv.costos.promediosGlobal[mpId]) inv.costos.promediosGlobal[mpId]={kg:0,totalPesos:0};
+      inv.costos.promediosGlobal[mpId].kg+=kgNeto;
+      inv.costos.promediosGlobal[mpId].totalPesos+=totalPesos;
+    });
+    try{
+      const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+      if(!fin.movimientos)fin.movimientos=[];if(!fin.cajas)fin.cajas={};
+      // Get proveedor name from CONFIG
+      const cfgData=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+      const allProvs=(cfgData.proveedores&&cfgData.proveedores.length)?cfgData.proveedores:(fin.proveedores||[]);
+      const provNom=(allProvs.find(function(p){return p.id===provId;})||{}).nombre||'Proveedor';
+      // Update cuenta corriente in CONFIG
+      if(cfgData.cajas&&cfgData.cajas.proveedores){
+        const cajaProv=cfgData.cajas.proveedores.find(function(c){return c.provId===provId;});
+        if(cajaProv) cajaProv.saldo=(cajaProv.saldo||0)+tot;
+        localStorage.setItem('fy_config_v1',JSON.stringify(cfgData));
+      }
+      if(saldo>0&&caja!=='pendiente'){
+        fin.cajas[caja]=(fin.cajas[caja]||0)-saldo;
+        fin.movimientos.unshift({id:'mcam_'+Date.now(),fecha,concepto:'Pago camion '+pat+' — '+provNom,monto:saldo,tipo:'salida',caja,cat:'proveedor',notas:'Adel: '+fmt(adel)});
+      }else if(saldo>0&&caja==='pendiente'){
+        inv.pagPend.push({id:'pp_cam_'+Date.now(),tipo:'camion',fecha,provId,desc:provNom+' — Camion '+pat,total:saldo,saldo,adel,pagado:false});
+      }
+      localStorage.setItem('fy_finanzas',JSON.stringify(fin));
+    }catch(e){}
+    // Registrar descarga en RRHH
+    try{
+      const checks=[...document.querySelectorAll('#dc-emps input:checked')].map(c=>c.value);
+      if(checks.length){
+        const kgTotal=cargas.reduce((s,c)=>s+c.kg,0);
+        const tipoMayor=cargas[0]?.tipo==='carbon'?'carbon':'lena';
+        const tarifa=tipoMayor==='carbon'?10:9;
+        const total=kgTotal*tarifa;
+        const n=checks.length;
+        const EZE_EXTRA=40000;
+        const ezeIdx=checks.indexOf('eze');
+        const rrhh_data=JSON.parse(localStorage.getItem('fy_rrhh_v3')||'{}');
+        if(!rrhh_data.descargas)rrhh_data.descargas=[];
+        const participantes=checks.map(emp=>{
+          let monto;
+          if(emp==='eze'&&ezeIdx>-1) monto=EZE_EXTRA+Math.round((total-EZE_EXTRA)/n);
+          else monto=Math.round(ezeIdx>-1?(total-EZE_EXTRA)/n:total/n);
+          return{emp,monto,pagado:false};
+        });
+        rrhh_data.descargas.unshift({id:'dc_'+Date.now(),fecha,tipo:tipoMayor,kg:kgTotal,tarifa,total,participantes,camionId:cam.id});
+        // Si Eze descargó → marcar ese día como medio día en asistencia (cobra $40k fijo + parte descarga)
+        if(checks.includes('eze')){
+          if(!rrhh_data.asistencia) rrhh_data.asistencia={};
+          if(!rrhh_data.asistencia[fecha]) rrhh_data.asistencia[fecha]={};
+          // Solo sobreescribir si no estaba marcado como doble (feriado)
+          if(rrhh_data.asistencia[fecha]['eze']!=='doble'){
+            rrhh_data.asistencia[fecha]['eze']='medio';
+          }
+        }
+        localStorage.setItem('fy_rrhh_v3',JSON.stringify(rrhh_data));
+      }
+    }catch(e){console.error('Error descarga RRHH:',e);}
+    toast('Camión aceptado — stock, finanzas y descarga actualizados');
+  }else{toast('Camión rechazado — sin cambios en stock');}
+  save();toggleFormCam();renderCam();renderMP();updateBadge();
+}
+function renderCostos(){
+  const MP_LABELS={QBC:'Carbón QB',LQB:'Leña QB',LQC:'Leña QC',LESP:'Leña Espinillo'};
+  // CARBÓN
+  const carbonEl=document.getElementById('costos-carbon');
+  if(!carbonEl) return;
+  // Auto-recalcular si hay camiones pero no promedios
+  if(!inv.costos) inv.costos={desperdicio:15,precioCarbonilla:30,promedios:{},promediosGlobal:{},stockCarbonilla:0};
+  if(Object.keys(inv.costos.promediosGlobal||{}).length===0 && inv.camiones.filter(c=>c.estado==='recibido').length>0){
+    recalcularPromedios();
+    return; // recalcularPromedios llama renderCostos al final
+  }
+  const carbGlobal=inv.costos?.promediosGlobal?.['QBC'];
+  const costoRealGlobal=carbGlobal&&carbGlobal.kg>0?
+    (carbGlobal.totalPesos-(inv.costos.stockCarbonilla*inv.costos.precioCarbonilla))/carbGlobal.kg:0;
+
+  let carbHtml=`<div style="margin-bottom:12px;">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;">COSTO REAL PROMEDIO (descontando carbonilla)</div>
+    <div style="font-family:var(--display);font-size:28px;color:var(--amber);">${carbGlobal?fmt(costoRealGlobal)+'/kg':'Sin datos'}</div>
+    ${carbGlobal?`<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${fmtN(carbGlobal.kg)} kg comprados · Desperdicio ${inv.costos.desperdicio}%</div>`:''}
+  </div>`;
+
+  // Por proveedor
+  const provsCarbón=Object.values(inv.costos.promedios).filter(p=>p.mpId==='QBC');
+  if(provsCarbón.length){
+    carbHtml+='<div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:6px;">POR PROVEEDOR</div>';
+    provsCarbón.forEach(p=>{
+      const costo=p.kg>0?p.totalPesos/p.kg:0;
+      carbHtml+=`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px;">
+        <span style="color:var(--text2);">${getProvNombre(p.provId)}</span>
+        <span style="font-family:var(--mono);font-weight:600;">${fmt(costo)}/kg <span style="color:var(--text3);font-weight:400;">${fmtN(p.kg)}kg</span></span>
+      </div>`;
+    });
+  }
+  carbonEl.innerHTML=carbHtml;
+
+  // LEÑA
+  const lenaEl=document.getElementById('costos-lena');
+  let lenaHtml='';
+  ['LQB','LQC','LESP'].forEach(mpId=>{
+    const g=inv.costos.promediosGlobal[mpId];
+    if(!g||!g.kg) return;
+    const costo=g.totalPesos/g.kg;
+    lenaHtml+=`<div style="margin-bottom:10px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">${MP_LABELS[mpId]}</div>
+      <div style="font-family:var(--display);font-size:22px;color:var(--green);">${fmt(costo)}/kg</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${fmtN(g.kg)} kg comprados</div>
+    </div>`;
+  });
+  lenaEl.innerHTML=lenaHtml||'<div style="color:var(--text3);font-size:13px;">Sin datos de leña</div>';
+
+  // CARBONILLA
+  const carbKg=inv.costos.stockCarbonilla||0;
+  const carbVal=carbKg*inv.costos.precioCarbonilla;
+  document.getElementById('carbonilla-header').textContent=fmtN(carbKg)+' kg acumulados · '+fmt(carbVal)+' estimado';
+  document.getElementById('carbonilla-panel').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);">STOCK CARBONILLA</div>
+        <div style="font-family:var(--display);font-size:24px;color:var(--amber);">${fmtN(carbKg)} KG</div></div>
+      <div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);">PRECIO VENTA</div>
+        <div style="font-family:var(--display);font-size:24px;">${fmt(inv.costos.precioCarbonilla)}/kg</div></div>
+      <div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);">VALOR ESTIMADO</div>
+        <div style="font-family:var(--display);font-size:24px;color:var(--green);">${fmt(carbVal)}</div></div>
+    </div>
+    ${carbKg>0?`<div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+      <input type="number" id="venta-carbonilla-kg" placeholder="Kg a vender" style="width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;">
+      <input type="number" id="venta-carbonilla-precio" placeholder="$ por kg" value="${inv.costos.precioCarbonilla}" style="width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;">
+      <button onclick="venderCarbonilla()" class="btn btn-primary btn-sm">REGISTRAR VENTA</button>
+    </div>`:''}`;
+}
+
+function getProvNombre(provId){
+  try{
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    return (fin.proveedores||[]).find(p=>p.id===provId)?.nombre||provId;
+  }catch(e){return provId;}
+}
+
+function venderCarbonilla(){
+  const kg=parseFloat(document.getElementById('venta-carbonilla-kg')?.value)||0;
+  const precio=parseFloat(document.getElementById('venta-carbonilla-precio')?.value)||inv.costos.precioCarbonilla;
+  if(!kg){toast('Ingresá los kg a vender',true);return;}
+  if(kg>inv.costos.stockCarbonilla){toast('No tenés suficiente carbonilla en stock',true);return;}
+  const total=kg*precio;
+  inv.costos.stockCarbonilla=Math.max(0,inv.costos.stockCarbonilla-kg);
+  inv.stock['tigre'].mp['CARB']=Math.max(0,(inv.stock['tigre'].mp['CARB']||0)-kg);
+  // Registrar en finanzas
+  try{
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    if(!fin.movimientos)fin.movimientos=[];if(!fin.cajas)fin.cajas={};
+    fin.cajas['efectivo-tigre']=(fin.cajas['efectivo-tigre']||0)+total;
+    fin.movimientos.unshift({id:'mcarb_'+Date.now(),fecha:hoy(),
+      concepto:'Venta carbonilla '+fmtN(kg)+'kg @ '+fmt(precio)+'/kg',
+      monto:total,tipo:'entrada',caja:'efectivo-tigre',cat:'venta',notas:'Carbonilla'});
+    localStorage.setItem('fy_finanzas',JSON.stringify(fin));
+  }catch(e){}
+  save();renderCostos();toast(fmtN(kg)+'kg de carbonilla vendidos — '+fmt(total));
+}
+
+function editarConfig(){
+  const d=prompt('% de desperdicio (default carbonilla):',inv.costos.desperdicio);
+  if(d!==null) inv.costos.desperdicio=parseFloat(d)||15;
+  const p=prompt('Precio de venta carbonilla ($/kg):',inv.costos.precioCarbonilla);
+  if(p!==null) inv.costos.precioCarbonilla=parseFloat(p)||30;
+  save();renderCostos();toast('Configuración actualizada');
+}
+
+function renderCamFull(){ renderCostos(); renderCam(); }
+
+function renderCam(){
+  const pendsCam=inv.pagPend.filter(p=>p.tipo==='camion'&&!p.pagado);
+  const pCard=document.getElementById('cam-pend-card');
+  if(pendsCam.length){
+    pCard.style.display='block';
+    document.getElementById('cam-pend-total').textContent=pendsCam.length+' pendientes · '+fmt(pendsCam.reduce((s,p)=>s+(p.saldo||p.total||0),0));
+    document.getElementById('cam-pend-lista').innerHTML=pendsCam.map(p=>`
+      <div class="pend-row">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">${p.fecha}</div>
+        <div style="font-weight:500;">${p.desc}</div>
+        <div style="font-family:var(--mono);color:var(--text3);">Adel: ${fmt(p.adel||0)}</div>
+        <div style="font-family:var(--mono);font-weight:600;color:var(--amber);">${fmt(p.saldo||p.total||0)}</div>
+        <div><span class="badge b-amber">PENDIENTE</span></div>
+        <div><button onclick="pagarPend('${p.id}','camion')" class="btn btn-primary btn-sm">PAGAR</button></div>
+      </div>`).join('');
+  }else{pCard.style.display='none';}
+  const hist=document.getElementById('cam-hist');
+  if(!inv.camiones.length){hist.innerHTML='<div style="text-align:center;padding:30px;color:var(--text3);">Sin camiones registrados</div>';return;}
+  hist.innerHTML=inv.camiones.map(c=>{
+    const kgT=c.cargas.reduce((s,x)=>s+x.kg,0);
+    const eclass=c.estado==='recibido'?'b-green':'b-red';
+    // Get proveedor name from finanzas
+    let provNombre=c.provId||'—';
+    try{const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');const prov=(fin.proveedores||[]).find(p=>p.id===c.provId);if(prov)provNombre=prov.nombre;}catch(e){}
+    const kgCarbon=c.cargas.filter(x=>x.tipo==='carbon').reduce((s,x)=>s+x.kg,0);
+    const kgLena=c.cargas.filter(x=>x.tipo!=='carbon').reduce((s,x)=>s+x.kg,0);
+    return`<div class="cam-card">
+      <div class="cam-header">
+        <div>
+          <div style="font-family:var(--display);font-size:22px;letter-spacing:0.5px;color:var(--accent2);">${provNombre}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px;font-weight:500;">${c.fecha}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px;">
+            ${(c.dep||'tigre').toUpperCase()} · ${fmtN(kgT)} kg total
+            ${kgCarbon>0?`<span style="color:var(--amber);"> · ${fmtN(kgCarbon)}kg carbón</span>`:''}
+            ${kgLena>0?`<span style="color:var(--green);"> · ${fmtN(kgLena)}kg leña</span>`:''}
+            ${c.pat?`<span style="color:var(--text3);"> · ${c.pat}</span>`:''}
+          </div>
+          ${c.obs?`<div style="font-size:11px;color:var(--amber);margin-top:2px;">⚠ ${c.obs}</div>`:''}
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">Revisado: ${(c.rev||'').toUpperCase()} · ${c.cal||'—'}</div>
+        </div>
+        <div style="text-align:right;display:flex;align-items:center;gap:12px;">
+          <div>
+            <div style="font-family:var(--display);font-size:20px;">${fmt(c.tot||0)}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">Adel: ${fmt(c.adel||0)}</div>
+            ${(c.saldo||0)>0?`<div style="font-family:var(--mono);font-size:11px;color:var(--amber);">Saldo: ${fmt(c.saldo)}</div>`:`<div style="font-family:var(--mono);font-size:11px;color:var(--green);">Saldado ✓</div>`}
+          </div>
+          <span class="badge ${eclass}">${c.estado==='recibido'?'RECIBIDO':'RECHAZADO'}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// PRODUCCIÓN
+function mvFecha(d){
+  const dt=new Date(fprod+'T12:00:00');dt.setDate(dt.getDate()+d);
+  fprod=dt.toISOString().split('T')[0];
+  document.getElementById('prod-fecha').value=fprod;renderProd();
+}
+// ============================================================
+// PRODUCCIÓN MULTI-PRODUCTO
+// ============================================================
+var prodLineas = [{id:1, sku:'', cant:0}];
+
+function getPtOptsHtml(){
+  return `<option value="">— Producto —</option>
+    <option value="FY">FY — Caja FY 4kg</option>
+    <option value="B4">B4 — Bolsa 4kg</option>
+    <option value="B8">B8 — Bolsa 8kg</option>
+    <option value="BB10">BB10 — Sel. a mano 10kg</option>
+    <option value="BB3">BB3 — Sel. a mano 3kg</option>
+    <option value="PA8">PA8 — Parrilla 8kg</option>
+    <option value="PA10">PA10 — Parrilla 10kg</option>
+    <option value="LQB10">LQB10 — Leña QB 10kg</option>
+    <option value="LQC10">LQC10 — Leña QC 10kg</option>
+    <option value="LESP10">LESP10 — Leña Espinillo 10kg</option>
+    <optgroup label="── PERSONALIZADAS ──">
+    <option value="B4CC">B4CC — Cuatro Carnes 4kg</option>
+    <option value="B8CC">B8CC — Cuatro Carnes 8kg</option>
+    <option value="B4SOM">B4SOM — Sommelier 4kg</option>
+    <option value="B4AL">B4AL — Al Fuego 4kg</option>
+    <option value="B4CAR">B4CAR — Carlota 4kg</option>
+    <option value="B8PAR">B8PAR — Parmegiano 8kg</option>
+    <option value="B4RAF">B4RAF — Estancia Rafaela 4kg</option>
+    <option value="B4CJ">B4CJ — Cabaña Juramento 4kg</option>
+    <option value="B8CJ">B8CJ — Cabaña Juramento 8kg</option>
+    <option value="B10CABARJ">B10CABARJ — Cab. Arg. 10kg</option>
+    <option value="B4CABARJ">B4CABARJ — Cab. Arg. 4kg</option>
+    </optgroup>`;
+}
+
+function renderLineasProd(){
+  var cont = document.getElementById('pe-lineas');
+  if(!cont) return;
+  cont.innerHTML = prodLineas.map(function(l){
+    return '<div style="display:grid;grid-template-columns:1fr 100px auto;gap:8px;margin-bottom:8px;align-items:end;">'+
+      '<div class="ff" style="margin:0;"><select class="fi" data-lid="'+l.id+'" onchange="updateLineaProdSku(this)">'+getPtOptsHtml()+'</select></div>'+
+      '<div class="ff" style="margin:0;"><input class="fi" type="number" placeholder="cant." value="'+(l.cant||'')+'" min="1" inputmode="numeric" data-lid="'+l.id+'" onchange="updateLineaProdCant(this)" style="text-align:center;"></div>'+
+      (prodLineas.length>1?'<button class="btn-icon" style="color:var(--red);font-size:16px;" data-lid="'+l.id+'" onclick="elimLineaProdBtn(this)">&#x2715;</button>':'<div></div>')+
+    '</div>';
+  }).join('');
+  // Restore selected values
+  prodLineas.forEach(function(l){
+    var sel = cont.querySelector('[data-lid="'+l.id+'"]');
+    if(sel && l.sku) sel.value = l.sku;
+  });
+  calcJornalPreview();
+}
+
+function agregarLineaProd(){
+  prodLineas.push({id: Date.now(), sku:'', cant:0});
+  renderLineasProd();
+}
+
+function elimLineaProdBtn(btn){
+  var lid = parseInt(btn.getAttribute('data-lid'));
+  prodLineas = prodLineas.filter(function(l){ return l.id !== lid; });
+  renderLineasProd();
+}
+
+function updateLineaProdSku(sel){
+  var lid = parseInt(sel.getAttribute('data-lid'));
+  var l = prodLineas.find(function(x){ return x.id===lid; });
+  if(l) l.sku = sel.value;
+  calcJornalPreview();
+}
+
+function updateLineaProdCant(input){
+  var lid = parseInt(input.getAttribute('data-lid'));
+  var l = prodLineas.find(function(x){ return x.id===lid; });
+  if(l) l.cant = parseInt(input.value)||0;
+  calcJornalPreview();
+}
+
+function calcJornalPreview(){
+  var total = 0;
+  var detalle = [];
+  prodLineas.forEach(function(l){
+    if(!l.sku || !l.cant) return;
+    var tarifa = getTarifa(l.sku);
+    var sub = tarifa * l.cant;
+    total += sub;
+    if(sub > 0) detalle.push(l.cant+'x '+l.sku+': $'+Math.round(sub).toLocaleString('es-AR'));
+  });
+  var prev = document.getElementById('pe-jornal-preview');
+  var totEl = document.getElementById('pe-jornal-total');
+  var detEl = document.getElementById('pe-jornal-detalle');
+  if(prev) prev.style.display = total > 0 ? 'block' : 'none';
+  if(totEl) totEl.textContent = '$'+Math.round(total).toLocaleString('es-AR');
+  if(detEl) detEl.textContent = detalle.join(' · ');
+}
+
+function initEmpSelect(){
+  var sel = document.getElementById('pe-emp');
+  if(!sel) return;
+  // Load from RRHH/CONFIG
+  var emps = EMPS;
+  try{
+    var cfg = JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    if(cfg.empleados && cfg.empleados.length){
+      var prod = cfg.empleados.filter(function(e){ return e.rol==='embolsador'&&e.activo; });
+      if(prod.length) emps = prod.map(function(e){ return {id:e.id, n:e.nombre}; });
+    }
+  }catch(ex){}
+  sel.innerHTML = emps.map(function(e){ return '<option value="'+e.id+'">'+e.n.toUpperCase()+'</option>'; }).join('');
+}
+
+function regProd(){
+  var emp = document.getElementById('pe-emp').value;
+  var dep = document.getElementById('pe-dep').value;
+  var lineasValidas = prodLineas.filter(function(l){ return l.sku && l.cant > 0; });
+
+  if(!lineasValidas.length){ toast('Agregá al menos un producto con cantidad', true); return; }
+
+  var empNombre = EMPS.find(function(e){ return e.id===emp; });
+  empNombre = empNombre ? empNombre.n : emp;
+  var jornadaTotal = 0;
+  var registros = [];
+
+  lineasValidas.forEach(function(l){
+    var pt = PT.find(function(p){ return p.sku===l.sku; });
+    var tarifa = getTarifa(l.sku);
+    var jornal = tarifa * l.cant;
+    jornadaTotal += jornal;
+
+    // Registrar producción
+    inv.produccion.push({id:'p_'+Date.now()+'_'+l.sku, fecha:fprod, emp, dep, sku:l.sku, cant:l.cant, jornal});
+
+    // Actualizar stock
+    if(pt){
+      if(!inv.stock[dep]) inv.stock[dep] = {mp:{},pkg:{},pt:{}};
+      inv.stock[dep].mp[pt.mp] = Math.max(0,(inv.stock[dep].mp[pt.mp]||0) - pt.kg*l.cant);
+      inv.stock[dep].pkg[pt.pkg] = Math.max(0,(inv.stock[dep].pkg[pt.pkg]||0) - l.cant);
+      inv.stock[dep].pt[pt.sku] = (inv.stock[dep].pt[pt.sku]||0) + l.cant;
+    }
+    registros.push(l.cant+'x '+l.sku);
+  });
+
+  // Registrar jornal en RRHH
+  try{
+    var rrhh = JSON.parse(localStorage.getItem('fy_rrhh_v3')||'{}');
+    if(!rrhh.prodPagado) rrhh.prodPagado = {};
+    if(!rrhh.jornadaProduccion) rrhh.jornadaProduccion = [];
+    rrhh.jornadaProduccion.push({
+      id: 'jp_'+Date.now(),
+      fecha: fprod,
+      empId: emp,
+      empNombre: empNombre,
+      dep,
+      lineas: lineasValidas.map(function(l){ return {sku:l.sku,cant:l.cant,tarifa:getTarifa(l.sku),jornal:getTarifa(l.sku)*l.cant}; }),
+      jornadaTotal,
+      pagado: false
+    });
+    localStorage.setItem('fy_rrhh_v3', JSON.stringify(rrhh));
+  }catch(ex){}
+
+  save();
+  // Reset lines
+  prodLineas = [{id:1, sku:'', cant:0}];
+  renderLineasProd();
+  renderProd();
+  toast(empNombre.toUpperCase()+' — '+registros.join(', ')+' — Jornal: $'+Math.round(jornadaTotal).toLocaleString('es-AR'));
+}
+function renderProd(){PT=buildPT();
+  document.getElementById('prod-fecha-lbl').textContent=new Date(fprod+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+  const dia=inv.produccion.filter(p=>p.fecha===fprod);
+  const totB=dia.reduce((s,r)=>s+r.cant,0);
+  const totKg=dia.reduce((s,r)=>{const p=PT.find(x=>x.sku===r.sku);return s+(p?p.kg*r.cant:0);},0);
+  const totJornal=dia.reduce((s,r)=>s+getTarifa(r.sku)*r.cant,0);
+  document.getElementById('prod-sub').textContent=fprod+' · '+fmtN(totB)+' bolsas · ~'+Math.round(totKg)+' kg · Jornales: $'+Math.round(totJornal).toLocaleString('es-AR');
+  const t=document.getElementById('prod-dia-tabla');
+  if(!dia.length){t.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Sin producción este día</div>';return;}
+  t.innerHTML='<table><thead><tr><th>EMPLEADO</th><th>DEPÓSITO</th><th>PRODUCTO</th><th style="text-align:right">BOLSAS</th><th style="text-align:right">KG</th><th style="text-align:right">JORNAL</th><th></th></tr></thead><tbody>'+
+    dia.map(r=>{const p=PT.find(x=>x.sku===r.sku);const e=EMPS.find(x=>x.id===r.emp);
+      return`<tr><td style="font-weight:500;">${e?.n||r.emp}</td><td style="font-family:var(--mono);font-size:11px;color:var(--text3);">${(r.dep||'tigre').toUpperCase()}</td>
+        <td>${p?.n||r.sku}</td><td style="font-family:var(--mono);text-align:right;color:var(--green);font-weight:600;">${fmtN(r.cant)}</td>
+        <td style="font-family:var(--mono);text-align:right;color:var(--text3);">${p?(p.kg*r.cant).toFixed(1):'—'}</td>
+        <td><button onclick="elimProd('${r.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;">✕</button></td></tr>`;
+    }).join('')+'</tbody></table>';
+  const fechas=[...new Set(inv.produccion.map(p=>p.fecha))].sort().reverse().slice(0,15);
+  const h=document.getElementById('prod-hist-tabla');
+  h.innerHTML=fechas.length?'<table><thead><tr><th>FECHA</th><th>EMPLEADO</th><th>PRODUCTO</th><th style="text-align:right">BOLSAS</th></tr></thead><tbody>'+
+    fechas.flatMap(f=>inv.produccion.filter(p=>p.fecha===f).map(r=>{
+      const p=PT.find(x=>x.sku===r.sku);const e=EMPS.find(x=>x.id===r.emp);
+      return`<tr><td style="font-family:var(--mono);font-size:11px;color:var(--text3);">${f}</td><td>${e?.n||r.emp}</td><td>${p?.n||r.sku}</td>
+        <td style="font-family:var(--mono);text-align:right;color:var(--green);">${fmtN(r.cant)}</td></tr>`;
+    })).join('')+'</tbody></table>'
+    :'<div style="text-align:center;padding:20px;color:var(--text3);">Sin historial</div>';
+}
+function elimProd(id){
+  const r=inv.produccion.find(p=>p.id===id);if(!r)return;
+  if(!confirm('Eliminar?'))return;
+  const p=PT.find(x=>x.sku===r.sku);
+  if(p){inv.stock[r.dep].mp[p.mp]=(inv.stock[r.dep].mp[p.mp]||0)+p.kg*r.cant;inv.stock[r.dep].pkg[p.pkg]=(inv.stock[r.dep].pkg[p.pkg]||0)+r.cant;inv.stock[r.dep].pt[p.sku]=Math.max(0,(inv.stock[r.dep].pt[p.sku]||0)-r.cant);}
+  inv.produccion=inv.produccion.filter(p=>p.id!==id);
+  // Remove corresponding jornal from finanzas
+  try{
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    if(fin.sueldosProd) fin.sueldosProd=fin.sueldosProd.filter(s=>!(s.fecha===r.fecha&&s.empId===r.emp&&s.sku===r.sku&&s.cant===r.cant));
+    localStorage.setItem('fy_finanzas',JSON.stringify(fin));
+  }catch(e){}
+  save();renderProd();toast('Eliminado');
+}
+
+// MOVIMIENTOS
+
+let movItems=[];
+function addMovItem(){
+  movItems.push({tipo:'pt',prod:'',cant:0});
+  renderMovItems();
+}
+function renderMovItems(){
+  document.getElementById('tm-items').innerHTML=movItems.map((item,i)=>`
+    <div style="display:grid;grid-template-columns:120px 1fr 120px auto;gap:8px;margin-bottom:8px;align-items:end;">
+      <div class="ff"><label>TIPO</label>
+        <select class="fi" onchange="movItems[${i}].tipo=this.value;renderMovItems()">
+          <option value="pt" ${item.tipo==='pt'?'selected':''}>Prod. terminado</option>
+          <option value="mp" ${item.tipo==='mp'?'selected':''}>Materia prima</option>
+        </select>
+      </div>
+      <div class="ff"><label>PRODUCTO</label>
+        <select class="fi" onchange="movItems[${i}].prod=this.value">
+          ${item.tipo==='pt'
+            ?PT.map(p=>`<option value="${p.sku}" ${item.prod===p.sku?'selected':''}>${p.n}</option>`).join('')
+            :MP.map(m=>`<option value="${m.id}" ${item.prod===m.id?'selected':''}>${m.nombre}</option>`).join('')
+          }
+        </select>
+      </div>
+      <div class="ff"><label>CANTIDAD</label>
+        <input class="fi" type="number" value="${item.cant||''}" placeholder="0" onchange="movItems[${i}].cant=parseInt(this.value)||0">
+      </div>
+      <button onclick="movItems.splice(${i},1);renderMovItems()" style="padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;">✕</button>
+    </div>`).join('');
+  // Set default prod if empty
+  movItems.forEach((item,i)=>{
+    if(!item.prod){
+      item.prod=item.tipo==='pt'?(PT[0]?.sku||''):(MP[0]?.id||'');
+    }
+  });
+}
+function regMov(){
+  const fecha=document.getElementById('tm-fecha').value||hoy();
+  const desde=document.getElementById('tm-dir').value;
+  const hacia=desde==='tigre'?'pilar':'tigre';
+  const notas=document.getElementById('tm-notas').value.trim();
+  // Read current values from selects
+  document.querySelectorAll('#tm-items select').forEach((sel,idx)=>{
+    const itemIdx=Math.floor(idx/2);const field=idx%2===0?'tipo':'prod';
+    if(movItems[itemIdx]) movItems[itemIdx][field]=sel.value;
+  });
+  document.querySelectorAll('#tm-items input[type=number]').forEach((inp,i)=>{
+    if(movItems[i]) movItems[i].cant=parseInt(inp.value)||0;
+  });
+  const items=movItems.filter(x=>x.prod&&x.cant>0);
+  if(!items.length){toast('Agregá al menos un producto con cantidad',true);return;}
+  // Apply stock changes
+  items.forEach(item=>{
+    const key=item.tipo==='pt'?'pt':'mp';
+    inv.stock[desde][key][item.prod]=Math.max(0,(inv.stock[desde][key][item.prod]||0)-item.cant);
+    inv.stock[hacia][key][item.prod]=(inv.stock[hacia][key][item.prod]||0)+item.cant;
+  });
+  inv.movimientos.unshift({id:'mov_'+Date.now(),fecha,desde,hacia,items,notas});
+  movItems=[];
+  save();renderMovItems();renderMov();
+  toast(items.length+' producto'+( items.length>1?'s':'')+' → '+hacia.toUpperCase());
+}
+function renderMov(){
+  const hist=document.getElementById('mov-hist');
+  if(!inv.movimientos.length){hist.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);">Sin movimientos registrados</div>';return;}
+  hist.innerHTML=inv.movimientos.map((m,i)=>{
+    const items=m.items||[];
+    const resumen=items.map(item=>{
+      const p=item.tipo==='pt'?PT.find(x=>x.sku===item.prod):MP.find(x=>x.id===item.prod);
+      return fmtN(item.cant)+' '+(p?( item.tipo==='pt'?p.sku:p.id):item.prod);
+    }).join(' · ');
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-family:var(--display);font-size:16px;color:var(--accent2);">${(m.desde||'').toUpperCase()}</span>
+          <span style="color:var(--text3);">→</span>
+          <span style="font-family:var(--display);font-size:16px;color:var(--blue);">${(m.hacia||'').toUpperCase()}</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--text3);">${m.fecha}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);">${resumen}</div>
+        ${m.notas?`<div style="font-size:11px;color:var(--text3);margin-top:2px;">${m.notas}</div>`:''}
+      </div>
+      <button onclick="elimMov(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:4px 8px;">✕</button>
+    </div>`;
+  }).join('');
+}
+function elimMov(i){
+  if(!confirm('Eliminar?'))return;
+  const m=inv.movimientos[i];
+  (m.items||[]).forEach(item=>{
+    const key=item.tipo==='pt'?'pt':'mp';
+    inv.stock[m.desde][key][item.prod]=(inv.stock[m.desde][key][item.prod]||0)+item.cant;
+    inv.stock[m.hacia][key][item.prod]=Math.max(0,(inv.stock[m.hacia][key][item.prod]||0)-item.cant);
+  });
+  inv.movimientos.splice(i,1);save();renderMov();
+}
+
+// ============================================================
+// COSTOS Y PRECIOS
+// ============================================================
+// PRODUCTOS_COSTO también lee de Config
+function buildProductosCosto(){
+  var cfg_prods=null;
+  try{var cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');if(cfg.productos&&cfg.productos.length)cfg_prods=cfg.productos.filter(function(p){return p.activo!==false;});}catch(ex){}
+  if(cfg_prods){
+    var cfg_full=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    return cfg_prods.map(function(p){
+      var precio=cfg_full.precios&&cfg_full.precios[p.sku]?cfg_full.precios[p.sku]:{particular:0,mayorista:0};
+      return {sku:p.sku,n:p.nombre,kg:p.kg||0,pkgId:p.pkgId,sec:p.linea,pkgARS:0,pkgIVA:true,precioPartic:precio.particular||0,precioParticDesc:Math.round((precio.particular||0)*0.9),precioMay:precio.mayorista||0,mo:p.mo||0};
+    });
+  }
+  return [];
+}
+var PRODUCTOS_COSTO = buildProductosCosto();
+
+function getCostoCarbon(kg){
+  // Costo promedio ponderado del carbón × kg de la bolsa
+  try{
+    const g=inv.costos?.promediosGlobal?.QBC;
+    if(g&&g.kg>0) return Math.round((g.totalPesos/g.kg)*kg);
+  }catch(e){}
+  return 0;
+}
+function getCostoLena(mpId, kg){
+  try{
+    const g=inv.costos?.promediosGlobal?.[mpId];
+    if(g&&g.kg>0) return Math.round((g.totalPesos/g.kg)*kg);
+  }catch(e){}
+  return 0;
+}
+function getCostoPkg(pkgId){
+  // 1. Buscar en entradas reales (pagos)
+  try{
+    const entrada=inv.pagPend?.filter(p=>p.pkgId===pkgId).sort((a,b)=>b.fecha?.localeCompare(a.fecha))[0];
+    if(entrada&&entrada.cant>0) return Math.round(entrada.total/entrada.cant);
+  }catch(e){}
+  // 2. Usar precio default del catálogo
+  const prod=PRODUCTOS_COSTO.find(p=>p.pkgId===pkgId);
+  if(prod){
+    if(prod.pkgUSD){
+      // Convertir USD a ARS con blue actual
+      const blue=inv.costos?.blueActual||1200;
+      return Math.round(prod.pkgUSD*blue);
+    }
+    if(prod.pkgARS){
+      return prod.pkgIVA?Math.round(prod.pkgARS*1.21):prod.pkgARS;
+    }
+  }
+  return 0;
+}
+function getMO(sku){
+  const DIST=['MP','ALA','XS','LMX'];
+  if(DIST.includes(sku)) return 0;
+  // Leer tarifas de RRHH si están disponibles
+  try{
+    const rrhh=JSON.parse(localStorage.getItem('fy_rrhh_v3')||'{}');
+    const tarifas=rrhh.tarifasProduccion||{};
+    if(tarifas[sku]) return tarifas[sku];
+    // También intentar desde CONFIG
+    const cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    const cfgTarifas=(cfg.tarifasProduccion)||{};
+    if(cfgTarifas[sku]) return cfgTarifas[sku];
+  }catch(e){}
+  // Fallback tarifas hardcodeadas
+  const TARIFAS={FY:600,B4:180,B8:260,BB10:390,BB3:260,PA8:260,PA10:260,LQB10:330,LQC10:330,LESP10:330};
+  if(sku.startsWith('B4')||sku==='B4CABARJ') return TARIFAS.B4||180;
+  if(sku.startsWith('B8')) return TARIFAS.B8||260;
+  if(sku.startsWith('B10')) return TARIFAS.B8||260;
+  return TARIFAS[sku]||0;
+}
+
+function renderCostos(){
+  // Get blue rate from finanzas
+  try{
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    if(fin.blueActual&&fin.blueActual>0){
+      if(!inv.costos) inv.costos={};
+      inv.costos.blueActual=fin.blueActual;
+    }
+  }catch(e){}
+  // Also try to get directly cached
+  const blueActual=inv.costos?.blueActual||1200;
+  const secciones=[...new Set(PRODUCTOS_COSTO.map(p=>p.sec))];
+  let html='';
+
+  secciones.forEach(sec=>{
+    const prods=PRODUCTOS_COSTO.filter(p=>p.sec===sec);
+    html+=`<div class="card" style="margin-bottom:12px;">
+      <div style="padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;">${sec}</div>
+      </div>
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;min-width:900px;">
+        <thead><tr>
+          <th style="min-width:180px;">PRODUCTO</th>
+          <th style="text-align:right;min-width:100px;">CARBÓN/LEÑA</th>
+          <th style="text-align:right;min-width:100px;">PACKAGING</th>
+          <th style="text-align:right;min-width:100px;">MO (editable)</th>
+          <th style="text-align:right;min-width:100px;">OTROS</th>
+          <th style="text-align:right;min-width:110px;color:var(--red);">COSTO TOTAL</th>
+          <th style="text-align:right;min-width:140px;color:var(--blue);">PRECIO PARTIC. ✎</th>
+          <th style="text-align:right;min-width:120px;color:var(--green);">PRECIO MAY. ✎</th>
+          <th style="text-align:right;min-width:80px;color:var(--amber);">MARGEN %</th>
+        </tr></thead>
+        <tbody>`;
+
+    prods.forEach(p=>{
+      const extra=inv.costosProductos[p.sku]||{};
+      // Auto costs
+      const isLena=p.sec==='LEÑA';
+      const mpId=p.sku==='LQB10'?'LQB':p.sku==='LQC10'?'LQC':p.sku==='LESP10'?'LESP':'QBC';
+      const costoMP=isLena?getCostoLena(mpId,p.kg):getCostoCarbon(p.kg);
+      const costoPkg=getCostoPkg(p.pkgId);
+      const mo=getMO(p.sku); // Siempre de TARIFAS, se modifica en RRHH
+      const otros=extra.otros||0;
+      const total=costoMP+costoPkg+mo+otros;
+      const pPartic=extra.precioPartic!==undefined?extra.precioPartic:p.precioPartic||0;
+      const pMay=extra.precioMay!==undefined?extra.precioMay:p.precioMay||0;
+      const margenMay=pMay>0&&total>0?Math.round((pMay-total)/pMay*100):0;
+      const margenPartic=pPartic>0&&total>0?Math.round((pPartic-total)/pPartic*100):0;
+      const margenColor=(m)=>m>40?'var(--green)':m>20?'var(--amber)':'var(--red)';
+
+      html+=`<tr>
+        <td style="font-weight:500;font-size:13px;">${p.n}<br><span style="font-family:var(--mono);font-size:10px;color:var(--text3);">${p.sku} · ${p.kg}kg</span></td>
+        <td style="font-family:var(--mono);text-align:right;color:${costoMP>0?'var(--text)':'var(--text3)'};">${costoMP>0?fmt(costoMP):'—'}<br><span style="font-size:10px;color:var(--text3);">auto</span></td>
+        <td style="font-family:var(--mono);text-align:right;color:${costoPkg>0?'var(--text)':'var(--text3)'};">${costoPkg>0?fmt(costoPkg):'—'}<br><span style="font-size:10px;color:var(--text3);">auto</span></td>
+        <td style="font-family:var(--mono);text-align:right;color:var(--text3);">
+          ${fmt(mo)}<br><span style="font-size:9px;">tarifa prod.</span>
+        </td>
+        <td style="text-align:right;">
+          <input type="number" value="${otros}" style="width:90px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:var(--mono);font-size:12px;text-align:right;outline:none;"
+            onchange="setCostoField('${p.sku}','otros',parseInt(this.value)||0);renderCostos()">
+        </td>
+        <td style="font-family:var(--display);font-size:18px;text-align:right;color:var(--red);">${fmt(total)}</td>
+        <td style="text-align:right;">
+          ${p.porCliente?'<span style="font-family:var(--mono);font-size:10px;color:var(--text3);">Por cliente</span>':
+          `<input type="number" value="${pPartic||p.precioPartic||''}" placeholder="$0"
+            style="width:100px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;color:var(--blue);font-family:var(--mono);font-size:13px;font-weight:600;text-align:right;outline:none;"
+            onchange="setCostoField('${p.sku}','precioPartic',parseInt(this.value)||0);renderCostos()">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px;">Efec/Tra: ${fmt(Math.round((extra.precioPartic||p.precioPartic||0)*0.9))}</div>`}
+        </td>
+        <td style="text-align:right;">
+          ${p.porCliente?'<span style="font-family:var(--mono);font-size:10px;color:var(--text3);">Por cliente</span>':
+          `<input type="number" value="${pMay||p.precioMay||''}" placeholder="$0"
+            style="width:100px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;color:var(--green);font-family:var(--mono);font-size:13px;font-weight:600;text-align:right;outline:none;"
+            onchange="setCostoField('${p.sku}','precioMay',parseInt(this.value)||0);renderCostos()">`}
+        </td>
+        <td style="font-family:var(--mono);text-align:right;color:${margenMay>30?'var(--green)':margenMay>15?'var(--amber)':'var(--red)'};">
+          ${!p.porCliente&&pMay>0&&total>0?margenMay+'%':'—'}
+        </td>
+      </tr>`;
+    });
+
+    html+='</tbody></table></div></div>';
+  });
+
+  document.getElementById('costos-content').innerHTML=html;
+}
+
+function setCostoField(sku,field,val){
+  if(!inv.costosProductos[sku]) inv.costosProductos[sku]={};
+  inv.costosProductos[sku][field]=val;
+  save();
+  // Sync precios to shared key for ALL modules
+  try{
+    const precios=JSON.parse(localStorage.getItem('fy_precios')||'{}');
+    if(!precios[sku]) precios[sku]={};
+    if(field==='precioPartic'){
+      precios[sku].partic=val;
+      precios[sku].precioPartic=val;
+      precios[sku].particDesc=Math.round(val*0.9); // 10% desc automático
+    } else if(field==='precioMay'){
+      precios[sku].may=val;
+      precios[sku].precioMay=val;
+    } else if(field==='precioParticDesc'){
+      precios[sku].particDesc=val;
+    }
+    localStorage.setItem('fy_precios',JSON.stringify(precios));
+  }catch(e){}
+}
+
+function agregarProductoCosto(){
+  const sku=prompt('SKU del nuevo producto (ej: B4NUEVO):','');
+  if(!sku) return;
+  const n=prompt('Nombre del producto:','');
+  if(!n) return;
+  const kg=parseFloat(prompt('Kilos por bolsa:','4'))||4;
+  const pkgId=prompt('ID del packaging (ej: PKG-B4):','PKG-B4');
+  PRODUCTOS_COSTO.push({sku,n,kg,pkgId,sec:'PERSONALIZADAS 4KG'});
+  renderCostos();
+  toast('Producto '+sku+' agregado');
+}
+
+function recalcularPromedios(){
+  // Reconstruir promedios desde el historial de camiones existente
+  inv.costos.promedios={};
+  inv.costos.promediosGlobal={};
+  inv.costos.stockCarbonilla=0;
+
+  inv.camiones.filter(c=>c.estado==='recibido').forEach(c=>{
+    const provId=c.provId||'';
+    (c.cargas||[]).forEach(carga=>{
+      const mpId=carga.tipo==='carbon'?'QBC':carga.tipo==='lena-qb'?'LQB':carga.tipo==='lena-qc'?'LQC':'LESP';
+      const esCarbonQBC=mpId==='QBC';
+      const kgNeto=esCarbonQBC?carga.kg*(1-(inv.costos.desperdicio/100)):carga.kg;
+      const kgCarb=esCarbonQBC?carga.kg*(inv.costos.desperdicio/100):0;
+      const totalPesos=carga.kg*carga.precio;
+      if(kgCarb>0) inv.costos.stockCarbonilla+=kgCarb;
+      // Por proveedor
+      const provKey=provId+'_'+mpId;
+      if(!inv.costos.promedios[provKey]) inv.costos.promedios[provKey]={kg:0,totalPesos:0,provId,mpId};
+      inv.costos.promedios[provKey].kg+=kgNeto;
+      inv.costos.promedios[provKey].totalPesos+=totalPesos;
+      // Global
+      if(!inv.costos.promediosGlobal[mpId]) inv.costos.promediosGlobal[mpId]={kg:0,totalPesos:0};
+      inv.costos.promediosGlobal[mpId].kg+=kgNeto;
+      inv.costos.promediosGlobal[mpId].totalPesos+=totalPesos;
+    });
+  });
+  save();
+  // Render directly without going through renderCostos (to avoid infinite loop)
+  const carbonEl=document.getElementById('costos-carbon');
+  if(carbonEl) {
+    const carbG=inv.costos.promediosGlobal['QBC'];
+    const costoR=carbG&&carbG.kg>0?(carbG.totalPesos-(inv.costos.stockCarbonilla*inv.costos.precioCarbonilla))/carbG.kg:0;
+    carbonEl.innerHTML=carbG?
+      `<div style="font-family:var(--display);font-size:28px;color:var(--amber);">$${Math.round(costoR).toLocaleString('es-AR')}/kg</div>
+       <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">${Math.round(carbG.kg).toLocaleString('es-AR')} kg comprados · Carbonilla: ${Math.round(inv.costos.stockCarbonilla).toLocaleString('es-AR')} kg</div>`
+      :'<div style="color:var(--text3);font-size:13px;">Sin datos de carbón</div>';
+  }
+  const lenaEl=document.getElementById('costos-lena');
+  if(lenaEl){
+    const LABELS={LQB:'Quebracho Blanco',LQC:'Quebracho Colorado',LESP:'Espinillo'};
+    let lHtml='';
+    ['LQB','LQC','LESP'].forEach(id=>{
+      const g=inv.costos.promediosGlobal[id];
+      const costo=g&&g.kg>0?Math.round(g.totalPesos/g.kg):0;
+      lHtml+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${LABELS[id]}</div>
+          ${g&&g.kg>0?`<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${Math.round(g.kg).toLocaleString('es-AR')} kg comprados</div>`:''}
+        </div>
+        <div style="font-family:var(--display);font-size:22px;color:${costo>0?'var(--green)':'var(--text3)'};">
+          ${costo>0?'$'+costo.toLocaleString('es-AR')+'/kg':'Sin datos'}
+        </div>
+      </div>`;
+    });
+    lenaEl.innerHTML=lHtml;
+  }
+  const carbHdr=document.getElementById('carbonilla-header');
+  const carbPanel=document.getElementById('carbonilla-panel');
+  const carbKg=inv.costos.stockCarbonilla||0;
+  if(carbHdr) carbHdr.textContent=Math.round(carbKg).toLocaleString('es-AR')+' kg acumulados · $'+(carbKg*inv.costos.precioCarbonilla).toLocaleString('es-AR')+' estimado';
+  if(carbPanel) carbPanel.innerHTML=`<div style="font-family:var(--mono);font-size:13px;">Stock: ${Math.round(carbKg).toLocaleString('es-AR')} kg · Precio venta: $${inv.costos.precioCarbonilla}/kg</div>`;
+  renderCam();
+  toast('Costos recalculados desde '+inv.camiones.filter(c=>c.estado==='recibido').length+' camiones ✓');
+}
+
+function updateBadge(){
+  const n=inv.pagPend.filter(p=>!p.pagado).length;
+  const b=document.getElementById('bdg-pend');if(b){b.style.display=n?'inline':'none';b.textContent=n;}
+}
+
+// INIT
+var _fh=document.getElementById('fecha-hoy');if(_fh)_fh.textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+['prod-fecha','tm-fecha','pb-fecha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=hoy();});
+document.getElementById('prod-fecha').addEventListener('change',function(){fprod=this.value;renderProd();});
+// Fill movimientos product selector
+function fillTmProd(){
+  const tipo=document.getElementById('tm-tipo')?.value||'pt';
+  const sel=document.getElementById('tm-prod');
+  if(!sel) return;
+  sel.innerHTML='';
+  if(tipo==='pt') PT.forEach(p=>sel.innerHTML+=`<option value="${p.sku}">${p.n}</option>`);
+  else MP.forEach(m=>sel.innerHTML+=`<option value="${m.id}">${m.nombre}</option>`);
+}
+const tmTipo=document.getElementById('tm-tipo');
+if(tmTipo) tmTipo.addEventListener('change',fillTmProd);
+
+load();
+
+function syncAllPrecios(){
+  try{
+    const precios=JSON.parse(localStorage.getItem('fy_precios')||'{}');
+    PRODS.forEach(function(p){
+      if(!precios[p.sku]) precios[p.sku]={};
+      const extra=(inv.costosProductos&&inv.costosProductos[p.sku])||{};
+      const pPartic=extra.precioPartic!==undefined?extra.precioPartic:(p.precioPartic||0);
+      const pMay=extra.precioMay!==undefined?extra.precioMay:(p.precioMay||0);
+      precios[p.sku].partic=pPartic;
+      precios[p.sku].precioPartic=pPartic;
+      precios[p.sku].particDesc=Math.round(pPartic*0.9);
+      precios[p.sku].may=pMay;
+      precios[p.sku].precioMay=pMay;
+    });
+    localStorage.setItem('fy_precios',JSON.stringify(precios));
+  }catch(e){}
+}
+
+function getDolarBlue(){
+  return inv.dolarBlue&&inv.dolarBlue.venta?inv.dolarBlue.venta:null;
+}
+
+function fetchDolarBlue(){
+  fetch('https://api.bluelytics.com.ar/v2/latest')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var venta=d.blue&&d.blue.value_sell?d.blue.value_sell:null;
+      var compra=d.blue&&d.blue.value_buy?d.blue.value_buy:null;
+      if(venta){
+        if(!inv.dolarBlue) inv.dolarBlue={};
+        inv.dolarBlue={venta:venta,compra:compra,fecha:new Date().toISOString()};
+        save();
+        var el=document.getElementById('dolar-blue-val');
+        if(el) el.textContent='$'+Math.round(venta).toLocaleString('es-AR');
+        var el2=document.getElementById('dolar-blue-fecha');
+        if(el2) el2.textContent='Actualizado '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+        renderCostos();
+      }
+    })
+    .catch(function(){
+      var el=document.getElementById('dolar-blue-val');
+      if(el&&inv.dolarBlue) el.textContent='$'+Math.round(inv.dolarBlue.venta||0).toLocaleString('es-AR')+' (offline)';
+    });
+}
+
+// Fetch dólar blue al cargar
+fetchDolarBlue();
+// Sync precios on load
+syncAllPrecios();
+// Auto-recalcular promedios si hay camiones pero no hay promedios guardados
+if(inv.camiones.filter(c=>c.estado==='recibido').length>0 && Object.keys(inv.costos.promediosGlobal||{}).length===0){
+  recalcularPromedios();
+}
+renderMP();fillTmProd();filterPkgTipo();updateBadge();
+
+// ═══════════════════════════════════════════════
+// DISTRIBUIDOS
+// ═══════════════════════════════════════════════
+var distLineas = [];
+
+function toggleFormDist(){
+  var f = document.getElementById('form-dist');
+  if(!f) return;
+  var open = f.style.display === 'none';
+  f.style.display = open ? 'block' : 'none';
+  if(open){
+    document.getElementById('dist-fecha').value = hoy();
+    loadDistProveedores();
+    distLineas = [];
+    renderDistLineas();
+    fillCajasSelect('dist-caja');
+  }
+}
+
+function loadDistProveedores(){
+  var sel = document.getElementById('dist-prov');
+  if(!sel) return;
+  var provs = getCajasConfig().provs || [];
+  // Filter to only proveedores with skusDist
+  var distProvs = provs.filter(function(p){ return p.skusDist && p.skusDist.length; });
+  if(!distProvs.length){
+    // Show all proveedores if none have skusDist
+    distProvs = provs;
+  }
+  sel.innerHTML = distProvs.map(function(p){
+    return '<option value="'+p.id+'">'+p.nombre+'</option>';
+  }).join('');
+  loadDistProductos();
+}
+
+function loadDistProductos(){
+  var provId = document.getElementById('dist-prov').value;
+  var provs = getCajasConfig().provs || [];
+  var prov = provs.find(function(p){ return p.id === provId; });
+  var skus = prov && prov.skusDist ? prov.skusDist : [];
+  // Pre-load one line per SKU of this proveedor, or one empty line
+  if(skus.length){
+    distLineas = skus.map(function(sku, i){
+      return {id: i+1, sku: sku, cant: 0, precio: 0};
+    });
+  } else {
+    distLineas = [{id: 1, sku: '', cant: 0, precio: 0}];
+  }
+  renderDistLineas();
+}
+
+function renderDistLineas(){
+  var cont = document.getElementById('dist-lineas');
+  if(!cont) return;
+  var prods = buildPT().filter(function(p){ return p.dist; });
+  var prodsOpts = prods.map(function(p){ return '<option value="'+p.sku+'">'+p.n+'</option>'; }).join('');
+  
+  cont.innerHTML = distLineas.map(function(l){
+    return '<div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:end;">' +
+      '<div class="ff" style="margin:0;"><label style="font-size:9px;">PRODUCTO</label>' +
+        '<select class="fi" data-did="'+l.id+'" onchange="updateDistSku(this)">'+
+          '<option value="">— elegir —</option>'+prodsOpts+
+        '</select></div>' +
+      '<div class="ff" style="margin:0;"><label style="font-size:9px;">CANT. UNIDADES</label>' +
+        '<input class="fi" type="number" min="0" placeholder="0" value="'+(l.cant||'')+'" data-did="'+l.id+'" onchange="updateDistCant(this)" inputmode="numeric"></div>' +
+      '<div class="ff" style="margin:0;"><label style="font-size:9px;">PRECIO UNIT.</label>' +
+        '<input class="fi" type="number" min="0" placeholder="0" value="'+(l.precio||'')+'" data-did="'+l.id+'" onchange="updateDistPrecio(this)" inputmode="numeric"></div>' +
+      (distLineas.length>1?'<button class="btn-icon" style="color:var(--red);font-size:16px;" data-did="'+l.id+'" onclick="removeDistLinea(this)">✕</button>':'<div></div>') +
+    '</div>';
+  }).join('') +
+  '<button type="button" onclick="addDistLinea()" style="width:100%;padding:7px;border:1px dashed var(--border);border-radius:8px;background:transparent;color:var(--text2);font-family:var(--mono);font-size:11px;cursor:pointer;margin-top:4px;">+ AGREGAR PRODUCTO</button>';
+  
+  // Restore selected values
+  distLineas.forEach(function(l){
+    var sel = cont.querySelector('select[data-did="'+l.id+'"]');
+    if(sel && l.sku) sel.value = l.sku;
+  });
+}
+
+function updateDistSku(sel){ var l=distLineas.find(function(x){return x.id===parseInt(sel.getAttribute('data-did'));}); if(l) l.sku=sel.value; }
+function updateDistCant(inp){ var l=distLineas.find(function(x){return x.id===parseInt(inp.getAttribute('data-did'));}); if(l) l.cant=parseInt(inp.value)||0; }
+function updateDistPrecio(inp){ var l=distLineas.find(function(x){return x.id===parseInt(inp.getAttribute('data-did'));}); if(l) l.precio=parseFloat(inp.value)||0; }
+function addDistLinea(){ distLineas.push({id:Date.now(),sku:'',cant:0,precio:0}); renderDistLineas(); }
+function removeDistLinea(btn){ var id=parseInt(btn.getAttribute('data-did')); distLineas=distLineas.filter(function(l){return l.id!==id;}); renderDistLineas(); }
+
+function calcDistSaldo(){
+  var tot = parseFloat(document.getElementById('dist-total').value)||0;
+  var adel = parseFloat(document.getElementById('dist-adel').value)||0;
+  var saldo = Math.max(0, tot-adel);
+  document.getElementById('dist-saldo').value = fmt(saldo);
+}
+
+function confirmarDist(){
+  var provId = document.getElementById('dist-prov').value;
+  var fecha = document.getElementById('dist-fecha').value || hoy();
+  var dep = document.getElementById('dist-dep').value;
+  var tot = parseFloat(document.getElementById('dist-total').value)||0;
+  var adel = parseFloat(document.getElementById('dist-adel').value)||0;
+  var saldo = Math.max(0, tot-adel);
+  var caja = document.getElementById('dist-caja').value;
+  var obs = document.getElementById('dist-obs').value.trim();
+  
+  var lineasValidas = distLineas.filter(function(l){ return l.sku && l.cant > 0; });
+  if(!lineasValidas.length){ toast('Agregá al menos un producto con cantidad', true); return; }
+  
+  // Update stock
+  if(!inv.stock[dep]) inv.stock[dep] = {mp:{},pkg:{},pt:{},dist:{}};
+  if(!inv.stock[dep].dist) inv.stock[dep].dist = {};
+  
+  var detalle = lineasValidas.map(function(l){
+    inv.stock[dep].dist[l.sku] = (inv.stock[dep].dist[l.sku]||0) + l.cant;
+    var pt = buildPT().find(function(p){ return p.sku===l.sku; });
+    return (pt?pt.n:l.sku)+' x'+l.cant+(l.precio?' @ '+fmt(l.precio):'');
+  }).join(' · ');
+  
+  // Register in proveedor CC (same as camiones)
+  try{
+    var cfgData = JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    var allProvs = cfgData.proveedores||[];
+    var provNom = (allProvs.find(function(p){return p.id===provId;})||{}).nombre||'Proveedor';
+    if(cfgData.cajas&&cfgData.cajas.proveedores){
+      var cajaProv = cfgData.cajas.proveedores.find(function(c){return c.provId===provId;});
+      if(cajaProv){
+        cajaProv.saldo = (cajaProv.saldo||0) + tot;
+        if(!cajaProv.movimientos) cajaProv.movimientos = [];
+        cajaProv.movimientos.push({
+          id:'dist_'+Date.now(), fecha, tipo:'mercaderia',
+          concepto:'Entrada distribuidos'+(obs?' — '+obs:''),
+          detalle, monto:tot, adelantoAplicado:adel, saldoPendiente:saldo, cajaId:caja!=='pendiente'?caja:null
+        });
+      }
+      localStorage.setItem('fy_config_v1', JSON.stringify(cfgData));
+    }
+    // Discount from caja in finanzas
+    if(saldo > 0 && caja && caja !== 'pendiente'){
+      var fin = JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+      if(!fin.cajas) fin.cajas = {};
+      if(!fin.movimientos) fin.movimientos = [];
+      fin.cajas[caja] = (fin.cajas[caja]||0) - saldo;
+      fin.movimientos.unshift({id:'mdist_'+Date.now(), fecha, concepto:'Pago distribuidos '+provNom+(obs?' — '+obs:''), monto:saldo, tipo:'salida', caja, cat:'proveedor', notas:detalle});
+      localStorage.setItem('fy_finanzas', JSON.stringify(fin));
+    }
+  }catch(ex){}
+  
+  save();
+  toggleFormDist();
+  renderPT();
+  toast('Entrada registrada — '+detalle);
+}
+
+function renderDistStock(){
+  var cont = document.getElementById('dist-stock-body');
+  if(!cont) return;
+  var prods = buildPT().filter(function(p){ return p.dist; });
+  if(!prods.length){ cont.innerHTML=''; return; }
+  
+  var deps = ['tigre','pilar'];
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px;">';
+  prods.forEach(function(p){
+    var total = 0;
+    deps.forEach(function(d){ total += (inv.stock[d]&&inv.stock[d].dist&&inv.stock[d].dist[p.sku])||0; });
+    html += '<div class="card" style="padding:12px 14px;">' +
+      '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:3px;">'+p.sku+'</div>'+
+      '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">'+p.n+'</div>'+
+      '<div style="font-family:var(--display);font-size:28px;color:'+(total>0?'var(--green)':'var(--red)')+';">'+total+'</div>'+
+      '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);">unidades</div>'+
+      deps.map(function(d){ var qty=(inv.stock[d]&&inv.stock[d].dist&&inv.stock[d].dist[p.sku])||0; return qty>0?'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">'+d+': '+qty+'</div>':''; }).join('')+
+    '</div>';
+  });
+  html += '</div>';
+  cont.innerHTML = html;
+}
+</script>
+</body>
+</html>

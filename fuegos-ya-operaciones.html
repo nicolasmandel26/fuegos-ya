@@ -1,0 +1,2699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Fuegos Ya — Operaciones</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#252525;
+  --border:#2a2a2a;--border2:#383838;
+  --text:#f0f0f0;--text2:#aaa;--text3:#666;
+  --accent:#e8470a;--accent2:#f5a623;
+  --green:#2ecc71;--red:#e74c3c;--blue:#3498db;--purple:#9b59b6;--amber:#f5a623;
+  --display:'Bebas Neue',sans-serif;--mono:'DM Mono',monospace;--body:'DM Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+
+/* NAV */
+.topnav{display:flex;align-items:center;gap:0;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border);height:48px;position:sticky;top:0;z-index:100;overflow-x:auto;}
+.nav-brand{font-family:var(--display);font-size:20px;letter-spacing:2px;color:var(--accent);margin-right:20px;white-space:nowrap;}
+.nav-link{padding:0 12px;height:48px;display:flex;align-items:center;font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--text3);text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;}
+.nav-link.active{color:var(--text);border-bottom-color:var(--accent);}
+
+/* TABS */
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:48px;z-index:99;}
+.tab{padding:12px 20px;font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;position:relative;}
+.tab.active{color:var(--text);border-bottom-color:var(--accent);}
+.tab .bdg{display:inline-block;background:var(--accent);color:white;border-radius:10px;padding:1px 6px;font-size:9px;margin-left:6px;}
+
+/* CONTENT */
+.content{padding:16px;max-width:900px;margin:0 auto;}
+.vista{display:none;}
+.vista.active{display:block;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+.card-title{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--text3);}
+
+/* PEDIDO CARD */
+.pedido-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:border-color 0.15s;}
+.pedido-card:hover{border-color:var(--border2);}
+.pedido-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;}
+.pedido-cliente{font-size:15px;font-weight:600;}
+.pedido-sub{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px;}
+.pedido-total{font-family:var(--display);font-size:22px;color:var(--accent2);}
+.pedido-items{padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px;}
+.pedido-tag{background:var(--surface2);border-radius:6px;padding:3px 8px;font-family:var(--mono);font-size:11px;color:var(--text2);}
+
+/* RECORRIDO CARD */
+.rec-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.rec-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.rec-chofer{font-family:var(--display);font-size:20px;letter-spacing:1px;}
+.rec-stats{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.rec-pedidos{padding:10px 16px;}
+.rec-pedido-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.rec-pedido-row:last-child{border-bottom:none;}
+
+/* ESTADO BADGES */
+.estado{display:inline-block;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:10px;font-weight:600;}
+.est-pendiente{background:rgba(102,102,102,0.2);color:var(--text3);}
+.est-asignado{background:rgba(52,152,219,0.15);color:var(--blue);}
+.est-camino{background:rgba(245,166,35,0.15);color:var(--amber);}
+.est-entregado{background:rgba(46,204,113,0.15);color:var(--green);}
+.est-cobrado{background:rgba(46,204,113,0.3);color:var(--green);}
+
+/* FORMS */
+.fi{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:var(--text);font-family:var(--body);font-size:14px;outline:none;}
+.fi:focus{border-color:var(--accent2);}
+.ff{margin-bottom:10px;}
+.ff label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--text3);margin-bottom:5px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* BTNS */
+.btn{padding:10px 18px;border-radius:8px;border:none;font-family:var(--body);font-size:14px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+.btn-primary{background:var(--accent);color:white;}
+.btn-green{background:var(--green);color:#000;}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-full{width:100%;}
+.btn-icon{background:none;border:none;color:var(--text3);cursor:pointer;padding:6px;font-size:16px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--surface);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-family:var(--display);font-size:22px;letter-spacing:1px;margin-bottom:16px;}
+
+/* PRODUCTO SELECTOR */
+.prod-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;background:var(--surface2);border-radius:8px;padding:8px 12px;}
+.prod-sku{font-family:var(--mono);font-size:12px;color:var(--text3);width:60px;}
+.prod-nombre{flex:1;font-size:13px;}
+.prod-qty{width:70px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--mono);font-size:14px;text-align:center;outline:none;}
+.prod-precio{font-family:var(--mono);font-size:12px;color:var(--text3);width:90px;text-align:right;}
+
+/* ENTREGA ROW */
+.entrega-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;}
+.entrega-row:last-child{border-bottom:none;}
+.entrega-row.entregado{opacity:0.6;}
+
+/* RESUMEN CIERRE */
+.resumen-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+
+/* REC CARDS */
+.rec-disp-card{background:var(--surface2);border-radius:8px;padding:10px 12px;cursor:pointer;border:1px solid transparent;transition:all 0.15s;}
+.rec-disp-card:hover{border-color:var(--accent2);background:var(--surface3);}
+.rec-sel-card{background:var(--surface2);border-radius:8px;padding:10px 12px;border:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.rec-sel-card .orden{font-family:var(--display);font-size:18px;color:var(--accent2);width:24px;text-align:center;}
+.rec-copy-btn{background:var(--surface3);border:none;color:var(--text2);border-radius:5px;padding:3px 8px;font-family:var(--mono);font-size:10px;cursor:pointer;white-space:nowrap;}
+.rec-copy-btn:active{background:var(--green);color:#000;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;color:var(--text3);font-family:var(--mono);font-size:12px;}
+.empty-icon{font-size:32px;margin-bottom:8px;}
+
+/* CHOFER VIEW */
+.chofer-btn{padding:10px 20px;border-radius:10px;border:2px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--display);font-size:20px;letter-spacing:2px;cursor:pointer;transition:all 0.15s;}
+.chofer-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(245,166,35,0.08);}
+.chofer-btn .rec-badge{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:8px;vertical-align:middle;}
+
+/* Entrega card chofer */
+.entrega-card{border-radius:12px;margin-bottom:12px;overflow:hidden;border:2px solid var(--border);transition:border-color 0.2s;}
+.entrega-card.pendiente{border-color:var(--border);}
+.entrega-card.en-curso{border-color:var(--accent2);}
+.entrega-card.listo{border-color:var(--green);opacity:0.7;}
+.entrega-num{font-family:var(--display);font-size:48px;color:var(--accent2);line-height:1;width:56px;text-align:center;flex-shrink:0;}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:10px 18px;font-family:var(--mono);font-size:12px;color:var(--text);z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* MOBILE BOTTOM NAV */
+@media(max-width:600px){
+  .content{padding:12px;}
+  .modal{border-radius:16px 16px 0 0;}
+}
+</style>
+</head>
+<body>
+<div style="display:flex;align-items:center;padding:0 16px;background:#161616;border-bottom:1px solid #2a2a2a;height:48px;position:sticky;top:0;z-index:200;overflow-x:auto;gap:0;flex-wrap:nowrap;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#e8470a;margin-right:20px;flex-shrink:0;">FUEGOS YA</div><a href="#" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#f0f0f0;text-decoration:none;border-bottom:2px solid #e8470a;white-space:nowrap;">OPERACIONES</a><a href="fuegos-ya-clientes.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">CLIENTES</a><a href="fuegos-ya-finanzas.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">FINANZAS</a><a href="fuegos-ya-inventario.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">INVENTARIO</a><a href="fuegos-ya-rrhh.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">RRHH</a><a href="fuegos-ya-dashboard.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">DASHBOARD</a><a href="fuegos-ya-config.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">CONFIG</a></div>
+<div class="tabs">
+  <div class="tab active" onclick="setTab('pedidos',this)">PEDIDOS <span class="bdg" id="bdg-pendientes">0</span></div>
+  <div class="tab" onclick="setTab('recorridos',this)">RECORRIDOS <span class="bdg" id="bdg-recorridos" style="display:none;background:var(--amber);">0</span></div>
+  <div class="tab" onclick="setTab('chofer',this)">VISTA CHOFER</div>
+  <div class="tab" onclick="setTab('historial',this)">HISTORIAL</div>
+</div>
+
+<div class="content">
+
+  <!-- PEDIDOS -->
+  <div class="vista active" id="tab-pedidos">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div>
+        <div style="font-family:var(--display);font-size:26px;letter-spacing:1px;">PEDIDOS</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);" id="pedidos-sub">—</div>
+      </div>
+      <button class="btn btn-primary" onclick="abrirModalPedido()">+ NUEVO</button>
+    </div>
+    <div id="lista-pedidos"></div>
+  </div>
+
+  <!-- RECORRIDOS -->
+  <div class="vista" id="tab-recorridos">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-family:var(--display);font-size:26px;letter-spacing:1px;">RECORRIDOS</div>
+      <button class="btn btn-primary" onclick="abrirModalRecorrido()">+ ARMAR</button>
+    </div>
+    <div id="lista-recorridos"></div>
+  </div>
+
+  <!-- VISTA CHOFER -->
+  <div class="vista" id="tab-chofer">
+    <div style="margin-bottom:16px;">
+      <div style="font-family:var(--display);font-size:26px;letter-spacing:1px;margin-bottom:4px;">VISTA CHOFER</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">Seleccioná un chofer para ver su recorrido activo</div>
+    </div>
+
+    <!-- Selector de chofer -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="chofer-selector"></div>
+
+    <!-- Contenido del chofer seleccionado -->
+    <div id="chofer-contenido"></div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div class="vista" id="tab-historial">
+    <div style="font-family:var(--display);font-size:26px;letter-spacing:1px;margin-bottom:16px;">HISTORIAL</div>
+    <div id="lista-historial"></div>
+  </div>
+
+</div>
+
+<!-- MODAL NUEVO PEDIDO -->
+<div class="modal-overlay hidden" id="modal-pedido">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-pedido-title">NUEVO PEDIDO</div>
+
+    <div class="ff">
+      <label>CLIENTE</label>
+      <input class="fi" id="ped-cliente-search" placeholder="Buscar cliente..." oninput="buscarCliente(this.value)" autocomplete="off">
+      <div id="ped-cliente-sugg" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;margin-top:4px;display:none;max-height:160px;overflow-y:auto;"></div>
+      <input type="hidden" id="ped-cliente-id">
+      <input type="hidden" id="ped-cliente-tipo">
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalClienteNuevo()" style="font-size:11px;">+ Cliente nuevo</button>
+    </div>
+
+    <div id="ped-cliente-info" style="display:none;"></div>
+
+    <!-- Datos del cliente — siempre visibles, editables -->
+    <div id="ped-datos-cliente">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;margin-top:4px;">DATOS DE ENTREGA</div>
+      <div class="ff">
+        <label>DIRECCIÓN</label>
+        <input class="fi" id="ped-direccion" placeholder="Dirección de entrega...">
+      </div>
+      <div class="fg3">
+        <div class="ff">
+          <label>ZONA</label>
+          <select class="fi" id="ped-zona">
+            <option value="">— Zona —</option>
+            <option value="Tigre">Tigre</option>
+            <option value="San Isidro">San Isidro</option>
+            <option value="Pilar">Pilar</option>
+            <option value="Escobar">Escobar</option>
+            <option value="CABA">CABA</option>
+            <option value="Zona Oeste">Zona Oeste</option>
+            <option value="Zona Sur">Zona Sur</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>HORARIO</label>
+          <input class="fi" id="ped-horario" placeholder="10:00-13:00">
+        </div>
+        <div class="ff">
+          <label>TELÉFONO</label>
+          <input class="fi" id="ped-tel" placeholder="+54 9..." type="tel" inputmode="tel">
+        </div>
+      </div>
+      <div class="ff">
+        <label>NOTAS / REFERENCIA</label>
+        <input class="fi" id="ped-notas-cliente" placeholder="Timbre, piso, instrucciones...">
+      </div>
+    </div>
+
+    <div class="fg2">
+      <div class="ff">
+        <label>FECHA DE PEDIDO</label>
+        <input class="fi" type="date" id="ped-fecha">
+      </div>
+      <div class="ff">
+        <label>TIPO PRECIO</label>
+        <select class="fi" id="ped-tipo-precio" onchange="recalcPedido()">
+          <option value="partic">Particular — Lista</option>
+          <option value="particDesc">Particular — Efec/Tra (10% off)</option>
+          <option value="may">Mayorista</option>
+          <option value="custom">Precio personalizado</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg2">
+      <div class="ff">
+        <label>CONDICIÓN FRENTE AL IVA</label>
+        <select class="fi" id="ped-iva" onchange="togglePedCuit()">
+          <option value="no">Sin factura</option>
+          <option value="si">Con factura (IVA)</option>
+          <option value="exento">Exento</option>
+        </select>
+      </div>
+      <div class="ff" id="ped-cuit-wrap" style="display:none;">
+        <label>CUIT</label>
+        <input class="fi" id="ped-cuit" placeholder="XX-XXXXXXXX-X">
+      </div>
+    </div>
+
+    <div class="ff">
+      <label>PRODUCTOS</label>
+      <div id="ped-productos"></div>
+    </div>
+
+    <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:16px;">
+      <!-- Descuento / Recargo -->
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
+        <div style="flex:1;">
+          <label style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;display:block;margin-bottom:5px;">DESCUENTO / RECARGO</label>
+          <input class="fi" type="number" id="ped-ajuste-val" placeholder="0" oninput="recalcPedido()" inputmode="numeric" style="text-align:right;">
+        </div>
+        <div style="width:130px;">
+          <label style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;display:block;margin-bottom:5px;">TIPO</label>
+          <select class="fi" id="ped-ajuste-tipo" onchange="recalcPedido()">
+            <option value="none">Sin ajuste</option>
+            <option value="desc-pct">% Descuento</option>
+            <option value="desc-amt">$ Descuento</option>
+            <option value="rec-pct">% Recargo</option>
+            <option value="rec-amt">$ Recargo</option>
+          </select>
+        </div>
+      </div>
+      <div id="ped-ajuste-detail" style="font-family:var(--mono);font-size:11px;margin-bottom:4px;"></div>
+      <div id="ped-iva-detail" style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:4px;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border);">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">TOTAL DEL PEDIDO</div>
+        <div style="font-family:var(--display);font-size:28px;color:var(--accent2);" id="ped-total">$0</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary btn-full" onclick="guardarPedido()">GUARDAR PEDIDO</button>
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-pedido')">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CLIENTE NUEVO COMPLETO -->
+<div class="modal-overlay hidden" id="modal-cliente-nuevo">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title">CLIENTE NUEVO</div>
+
+    <div class="ff"><label>NOMBRE / RAZÓN SOCIAL</label>
+      <input class="fi" id="cn-nombre" placeholder="Nombre completo...">
+    </div>
+
+    <div class="fg2">
+      <div class="ff"><label>TIPO DE CLIENTE</label>
+        <select class="fi" id="cn-tipo" onchange="toggleCnMayorista()">
+          <option value="particular">Particular</option>
+          <option value="mayorista">Mayorista / Local</option>
+        </select>
+      </div>
+      <div class="ff" id="cn-subtipo-wrap" style="display:none;"><label>TIPO DE LOCAL</label>
+        <select class="fi" id="cn-subtipo">
+          <option value="carniceria">Carnicería</option>
+          <option value="almacen">Almacén / Dietética</option>
+          <option value="parrilla">Parrilla / Restaurante</option>
+          <option value="supermercado">Supermercado</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg2">
+      <div class="ff"><label>ZONA</label>
+        <select class="fi" id="cn-zona">
+          <option value="">— Zona —</option>
+          <option value="Tigre">Tigre</option>
+          <option value="San Isidro">San Isidro</option>
+          <option value="Pilar">Pilar</option>
+          <option value="Escobar">Escobar</option>
+          <option value="CABA">CABA</option>
+          <option value="Zona Oeste">Zona Oeste</option>
+          <option value="Zona Sur">Zona Sur</option>
+        </select>
+      </div>
+      <div class="ff"><label>TELÉFONO</label>
+        <input class="fi" id="cn-tel" placeholder="+54 9..." type="tel" inputmode="tel">
+      </div>
+    </div>
+
+    <div class="ff"><label>DIRECCIÓN DE ENTREGA</label>
+      <input class="fi" id="cn-dir" placeholder="Calle, número, localidad...">
+    </div>
+
+    <div class="ff"><label>HORARIO DE ENTREGA</label>
+      <input class="fi" id="cn-horario" placeholder="Ej: 10:00-13:00">
+    </div>
+
+    <div id="cn-campos-mayorista" style="display:none;">
+      <div class="fg2">
+        <div class="ff"><label>CUIT</label>
+          <input class="fi" id="cn-cuit" placeholder="XX-XXXXXXXX-X">
+        </div>
+        <div class="ff"><label>FACTURACIÓN</label>
+          <select class="fi" id="cn-iva">
+            <option value="no">Sin factura</option>
+            <option value="si">Con factura (IVA)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="ff"><label>NOTAS / REFERENCIAS</label>
+      <input class="fi" id="cn-notas" placeholder="Timbre, piso, referencia de entrega...">
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-primary btn-full" onclick="guardarClienteNuevo()">CREAR Y SELECCIONAR</button>
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-cliente-nuevo')">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ARMAR RECORRIDO -->
+<div class="modal-overlay hidden" id="modal-recorrido">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title">ARMAR RECORRIDO</div>
+
+    <!-- PASO 1: Config -->
+    <div class="fg3" style="margin-bottom:14px;">
+      <div class="ff"><label>CHOFER</label><select class="fi" id="rec-chofer" onchange="actualizarNombreRec()"></select></div>
+      <div class="ff"><label>FECHA ENTREGA</label><input class="fi" type="date" id="rec-fecha" onchange="actualizarNombreRec()"></div>
+      <div class="ff"><label>DEPÓSITO SALIDA</label><select class="fi" id="rec-dep"></select></div>
+    </div>
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">NOMBRE DEL RECORRIDO</div>
+      <div style="font-family:var(--display);font-size:20px;color:var(--accent2);" id="rec-nombre-preview">—</div>
+    </div>
+    <div class="fg2" style="margin-bottom:14px;">
+      <div class="ff"><label>FILTRAR ZONA</label>
+        <select class="fi" id="rec-zona-filtro" onchange="filtrarPedidosRec()">
+          <option value="">Todas las zonas</option>
+          <option value="Tigre">Tigre</option>
+          <option value="San Isidro">San Isidro</option>
+          <option value="Pilar">Pilar</option>
+          <option value="Escobar">Escobar</option>
+          <option value="CABA">CABA</option>
+          <option value="Zona Oeste">Zona Oeste</option>
+          <option value="Zona Sur">Zona Sur</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- BARRA DE CARGA -->
+    <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text3);">CARGA DE CAMIONETA</span>
+        <span style="font-family:var(--mono);font-size:13px;" id="rec-kg-label">0 / 2.200 kg</span>
+      </div>
+      <div style="background:var(--surface3);border-radius:4px;height:8px;overflow:hidden;">
+        <div id="rec-kg-bar" style="height:100%;width:0%;background:var(--green);border-radius:4px;transition:width 0.3s,background 0.3s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--text3);">
+        <span>💰 <span id="rec-total-preview">$0</span></span>
+        <span><span id="rec-pedidos-count">0</span> pedidos seleccionados</span>
+      </div>
+    </div>
+
+    <!-- DOS COLUMNAS: disponibles | seleccionados -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+
+      <!-- DISPONIBLES -->
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:8px;letter-spacing:1px;">PEDIDOS DISPONIBLES</div>
+        <div id="rec-pedidos-disp" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
+      <!-- SELECCIONADOS (ordenables) -->
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:8px;letter-spacing:1px;">EN ESTE RECORRIDO</div>
+        <div id="rec-pedidos-sel" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+        <div id="rec-empty-sel" style="color:var(--text3);font-family:var(--mono);font-size:11px;text-align:center;padding:20px;">Seleccioná pedidos →</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary btn-full" onclick="crearRecorrido()">CONFIRMAR RECORRIDO</button>
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-recorrido')">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VISTA CARGA (chofer carga camioneta) -->
+<div class="modal-overlay hidden" id="modal-carga">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div>
+        <div style="font-family:var(--display);font-size:24px;letter-spacing:1px;" id="carga-title">CARGAR CAMIONETA</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">Cargá del último al primero — lo que va último, entra primero</div>
+      </div>
+    </div>
+    <div id="carga-lista"></div>
+    <div style="margin-top:16px;padding:14px;background:var(--surface2);border-radius:10px;margin-bottom:16px;" id="carga-resumen"></div>
+    <button class="btn btn-green btn-full" style="font-size:16px;" onclick="confirmarCargaYSalir()">✓ CAMIONETA LISTA — COMENZAR REPARTO</button>
+    <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%;" onclick="cerrarModal('modal-carga')">VOLVER</button>
+  </div>
+</div>
+
+<!-- MODAL VISTA REPARTO (chofer va cliente por cliente) -->
+<div class="modal-overlay hidden" id="modal-reparto">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <div style="font-family:var(--display);font-size:24px;letter-spacing:1px;" id="reparto-title">REPARTO</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);" id="reparto-sub"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="cerrarModal('modal-reparto')">✕</button>
+    </div>
+    <div id="reparto-lista"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button class="btn btn-primary btn-full" onclick="cerrarModal('modal-reparto');abrirCierre(repartoRecId)">CERRAR RECORRIDO</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CIERRE ADMIN -->
+<div class="modal-overlay hidden" id="modal-cierre">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="cierre-title">CIERRE DE RECORRIDO</div>
+    <div id="cierre-entregas"></div>
+    <div class="ff" style="margin-top:12px;">
+      <label>EL EFECTIVO VA A</label>
+      <select class="fi" id="cierre-caja">
+        <option value="efectivo-tigre">Efectivo Tigre</option>
+        <option value="efectivo-pilar">Efectivo Pilar</option>
+      </select>
+    </div>
+    <div id="cierre-resumen"></div>
+    <button class="btn btn-green btn-full" style="margin-top:12px;font-size:16px;" onclick="cerrarRecorrido()">✓ CERRAR Y REGISTRAR TODO</button>
+    <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%;" onclick="cerrarModal('modal-cierre')">CANCELAR</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function togglePedCuit(){
+  var iva = document.getElementById('ped-iva');
+  var wrap = document.getElementById('ped-cuit-wrap');
+  if(wrap) wrap.style.display = (iva&&iva.value==='si') ? 'block' : 'none';
+  recalcPedido();
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let ops = {
+  pedidos: [],    // {id, clienteId, clienteNombre, clienteTipo, fecha, productos:[{sku,cant,precio}], total, estado, notas, direccion, recorridoId}
+  recorridos: [], // {id, chofer, dep, fecha, pedidoIds, estado, cobros:{}, cierreFecha, cajaDestino}
+};
+
+let editandoPedidoId = null;
+let recorridoCierreId = null;
+
+function loadOps(){
+  try{
+    const s = localStorage.getItem('fy_ops_v1');
+    if(s) ops = JSON.parse(s);
+    if(!ops.pedidos) ops.pedidos = [];
+    if(!ops.recorridos) ops.recorridos = [];
+  }catch(e){ ops = {pedidos:[], recorridos:[]}; }
+}
+
+function saveOps(){
+  localStorage.setItem('fy_ops_v1', JSON.stringify(ops));
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmt(n){ return '$' + Math.round(n||0).toLocaleString('es-AR'); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).substr(2,4); }
+function hoy(){ return new Date().toISOString().split('T')[0]; }
+
+function getCfg(){
+  try{ return JSON.parse(localStorage.getItem('fy_config_v1')||'{}'); }catch(e){ return {}; }
+}
+
+function getPrecios(){
+  try{
+    const stored = JSON.parse(localStorage.getItem('fy_precios')||'{}');
+    if(Object.keys(stored).length) return stored;
+    // Fallback precios si no hay nada cargado
+    return {
+      FY:   {partic:13750,particDesc:12375,may:8000},
+      B4:   {partic:7300, particDesc:6570, may:4000},
+      B8:   {partic:14500,particDesc:13050,may:8300},
+      PA8:  {partic:0,    particDesc:0,    may:7000},
+      PA10: {partic:0,    particDesc:0,    may:8000},
+      BB10: {partic:21900,particDesc:19710,may:13500},
+      BB3:  {partic:8100, particDesc:7290, may:4500},
+      LQB10:{partic:10400,particDesc:9360, may:5200},
+      LQC10:{partic:10400,particDesc:9360, may:5200},
+      LESP10:{partic:10400,particDesc:9360,may:5200},
+      XS:   {partic:4300, particDesc:3870, may:2700},
+      MP:   {partic:3900, particDesc:3510, may:2300},
+      ALA:  {partic:5200, particDesc:4680, may:2800},
+      LMX:  {partic:9200, particDesc:8280, may:6000},
+    };
+  }catch(e){ return {}; }
+}
+
+// Catálogo dinámico — lee de Config
+function buildProductosBase(){
+  try{
+    var cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    var prods=cfg.productos||[];
+    if(prods.length) return prods.filter(function(p){return p.activo!==false;}).map(function(p){
+      return {sku:p.sku, nombre:p.nombre, kg:p.kg||0, linea:p.linea||'fy', activo:true};
+    });
+  }catch(ex){}
+  return [
+  {sku:'FY',   nombre:'Caja FY 4kg',          kg:4,  linea:'fy',          activo:true},
+  {sku:'B4',   nombre:'Bolsa 4kg',             kg:4,  linea:'fy',          activo:true},
+  {sku:'B8',   nombre:'Bolsa 8kg',             kg:8,  linea:'fy',          activo:true},
+  {sku:'PA8',  nombre:'Carbón Parrilla 8kg',   kg:8,  linea:'fy',          activo:true},
+  {sku:'PA10', nombre:'Carbón Parrilla 10kg',  kg:10, linea:'fy',          activo:true},
+  {sku:'BB10', nombre:'Sel. a mano 10kg',      kg:10, linea:'fy',          activo:true},
+  {sku:'BB3',  nombre:'Sel. a mano 3kg',       kg:3,  linea:'fy',          activo:true},
+  {sku:'LQB10',nombre:'Leña QB 10kg',          kg:10, linea:'lena',        activo:true},
+  {sku:'LQC10',nombre:'Leña QC 10kg',          kg:10, linea:'lena',        activo:true},
+  {sku:'LESP10',nombre:'Leña Espinillo 10kg',  kg:10, linea:'lena',        activo:true},
+  {sku:'XS',   nombre:'Iniciador FY XS',       kg:0,  linea:'distribuido', activo:true},
+  {sku:'MP',   nombre:'Maderitas Premium',     kg:0,  linea:'distribuido', activo:true},
+  {sku:'ALA',  nombre:'Atado Sauce/Álamo',     kg:0,  linea:'distribuido', activo:true},
+  {sku:'LMX',  nombre:'Lumix Mini (4u)',       kg:0,  linea:'distribuido', activo:true},
+  ];
+}
+var PRODUCTOS_BASE = buildProductosBase();
+
+function getTodosProductos(){
+  const cfg = getCfg();
+  if(cfg.productos&&cfg.productos.length) return cfg.productos.filter(function(p){ return p.activo; });
+  return PRODUCTOS_BASE;
+}
+
+function getProductosParaCliente(clienteId, clienteTipo){
+  const todos = getTodosProductos();
+  const esParticular = clienteTipo==='particular';
+  if(esParticular){
+    // Particulares: solo línea FY, leña y distribuidos — nunca personalizadas
+    return todos.filter(function(p){ return p.linea!=='personalizada'; });
+  }
+  // Mayoristas: FY + leña + distribuidos + personalizadas asignadas a ESE cliente
+  const pers = getPersonalizadasCliente(clienteId);
+  return todos.filter(function(p){
+    if(p.linea==='personalizada') return pers.includes(p.sku);
+    return true;
+  });
+}
+
+function getPersonalizadasCliente(clienteId){
+  // Lee las bolsas personalizadas asignadas a este cliente desde su perfil
+  try{
+    const cl = JSON.parse(localStorage.getItem('fy_clientes')||'{}');
+    var cliente = null;
+    ['locales','particulares'].forEach(function(t){
+      if(!cliente&&cl[t]) cliente = cl[t].find(function(c){ return c.id===clienteId; });
+    });
+    return (cliente&&cliente.bolsasPersonalizadas)||[];
+  }catch(e){ return []; }
+}
+
+function getProductos(){
+  // Backward compat - sin filtro de cliente
+  return getTodosProductos().filter(function(p){ return p.linea!=='personalizada'; });
+}
+
+function getClientes(){
+  try{
+    const cl = JSON.parse(localStorage.getItem('fy_clientes')||'{}');
+    return (cl.locales||[]).concat(cl.particulares||[]);
+  }catch(e){ return []; }
+}
+
+function toast(msg, err){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? 'rgba(231,76,60,0.9)' : 'var(--surface3)';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function setTab(tab, btn){
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.vista').forEach(function(v){ v.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='pedidos') renderPedidos();
+  if(tab==='recorridos') renderRecorridos();
+  if(tab==='chofer') renderChoferTab();
+  if(tab==='historial') renderHistorial();
+}
+
+// ============================================================
+// RENDER PEDIDOS
+// ============================================================
+function renderPedidos(){
+  const pendientes = ops.pedidos.filter(function(p){ return p.estado === 'pendiente'; });
+  const bdg = document.getElementById('bdg-pendientes');
+  bdg.textContent = pendientes.length;
+
+  document.getElementById('pedidos-sub').textContent =
+    pendientes.length + ' pedidos pendientes · ' +
+    fmt(pendientes.reduce(function(s,p){ return s + p.total; }, 0));
+    pendientes.length + ' pedidos pendientes · ' +
+    fmt(pendientes.reduce(function(s,p){ return s + p.total; }, 0));
+
+  const lista = document.getElementById('lista-pedidos');
+  if(!pendientes.length){
+    lista.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>Sin pedidos pendientes<br><span style="font-size:10px;">Tocá + NUEVO para cargar uno</span></div>';
+    return;
+  }
+
+  lista.innerHTML = pendientes.map(function(p){
+    const items = (p.productos||[]).map(function(pr){ return pr.cant+'x '+pr.sku; }).join(' · ');
+    return '<div class="pedido-card" onclick="editarPedido(\''+p.id+'\')">'+
+      '<div class="pedido-header">'+
+        '<div>'+
+          '<div class="pedido-cliente">'+p.clienteNombre+'</div>'+
+          '<div class="pedido-sub">Pedido '+p.fecha+(p.direccion?' · '+p.direccion:'')+'</div>'+
+        '</div>'+
+        '<div style="text-align:right;">'+
+          '<div class="pedido-total">'+fmt(p.total)+'</div>'+
+          '<span class="estado est-pendiente">PENDIENTE</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pedido-items">'+items.split(' · ').map(function(i){ return '<span class="pedido-tag">'+i+'</span>'; }).join('')+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ============================================================
+// MODAL PEDIDO
+// ============================================================
+function abrirModalPedido(){
+  editandoPedidoId = null;
+  document.getElementById('modal-pedido-title').textContent = 'NUEVO PEDIDO';
+  document.getElementById('ped-cliente-search').value = '';
+  document.getElementById('ped-cliente-id').value = '';
+  document.getElementById('ped-cliente-tipo').value = '';
+  document.getElementById('ped-direccion').value = '';
+  document.getElementById('ped-fecha').value = hoy();
+  document.getElementById('ped-tipo-precio').value = 'partic';
+  // Reset datos fields
+  window._pedAjuste = null; window._pedTotalFinal = 0; window._pedTotalNeto = 0;
+  var fields = ['ped-direccion','ped-horario','ped-notas-cliente','ped-cuit','ped-ajuste-val'];
+  fields.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var zonaEl = document.getElementById('ped-zona');
+  if(zonaEl) zonaEl.value = '';
+  var ivaEl = document.getElementById('ped-iva');
+  if(ivaEl) ivaEl.value = 'no';
+  var ajTipoEl = document.getElementById('ped-ajuste-tipo');
+  if(ajTipoEl) ajTipoEl.value = 'none';
+  togglePedCuit();
+  var info = document.getElementById('ped-cliente-info');
+  if(info){ info.style.display='none'; info.innerHTML=''; }
+  renderProdSelector();
+  document.getElementById('modal-pedido').classList.remove('hidden');
+}
+
+function editarPedido(id){
+  const p = ops.pedidos.find(function(x){ return x.id===id; });
+  if(!p) return;
+  editandoPedidoId = id;
+  document.getElementById('modal-pedido-title').textContent = 'EDITAR PEDIDO';
+  document.getElementById('ped-cliente-search').value = p.clienteNombre;
+  document.getElementById('ped-cliente-id').value = p.clienteId;
+  document.getElementById('ped-cliente-tipo').value = p.clienteTipo||'particular';
+  document.getElementById('ped-fecha').value = p.fecha;
+  document.getElementById('ped-tipo-precio').value = p.tipoPrecio||'partic';
+  // Populate datos section
+  var dirEl = document.getElementById('ped-direccion');
+  var zonaEl = document.getElementById('ped-zona');
+  var horarioEl = document.getElementById('ped-horario');
+  var telEl = document.getElementById('ped-tel');
+  var notasEl = document.getElementById('ped-notas-cliente');
+  if(dirEl) dirEl.value = p.direccion||'';
+  if(zonaEl) zonaEl.value = p.clienteZona||'';
+  if(horarioEl) horarioEl.value = p.horario||'';
+  if(notasEl) notasEl.value = p.notas||'';
+  renderProdSelector(p.productos);
+  document.getElementById('modal-pedido').classList.remove('hidden');
+}
+
+function renderProdSelector(existentes){
+  const clienteId = document.getElementById('ped-cliente-id').value;
+  const clienteTipo = document.getElementById('ped-cliente-tipo').value||'particular';
+  const prods = clienteId ? getProductosParaCliente(clienteId, clienteTipo) : getProductos();
+  const precios = getPrecios();
+  const tipoPrecio = document.getElementById('ped-tipo-precio').value;
+  const esCustom = tipoPrecio === 'custom';
+  // Load client's saved custom prices
+  var clientePreciosCustom = {};
+  if(clienteId){
+    try{
+      var cl = JSON.parse(localStorage.getItem('fy_clientes')||'{}');
+      var arr = Array.isArray(cl)?cl:[].concat(cl.locales||[]).concat(cl.particulares||[]);
+      var cRec = arr.find(function(c){ return String(c.id)===String(clienteId); });
+      if(cRec && cRec.preciosCustom) clientePreciosCustom = cRec.preciosCustom;
+      // Auto-switch to custom if client has custom prices and no tipoPrecio set yet
+      if(cRec && cRec.preciosCustom && Object.keys(cRec.preciosCustom).length && tipoPrecio !== 'custom'){
+        var tipoEl = document.getElementById('ped-tipo-precio');
+        if(tipoEl && !existentes) tipoEl.value = 'custom';
+      }
+    }catch(e){}
+  }
+
+  const html = prods.map(function(p){
+    const ex = existentes ? existentes.find(function(e){ return e.sku===p.sku; }) : null;
+    const cant = ex ? ex.cant : 0;
+    const pr = precios[p.sku]||{};
+    // For custom pricing: use existentes price, then client's saved custom price, then list price
+    var precio;
+    if(ex && ex.precio > 0){
+      precio = ex.precio;
+    } else if(esCustom && clientePreciosCustom && clientePreciosCustom[p.sku]){
+      precio = clientePreciosCustom[p.sku];
+    } else {
+      precio = pr[tipoPrecio]||pr.partic||0;
+    }
+    return '<div class="prod-row">'+
+      '<span class="prod-sku">'+p.sku+'</span>'+
+      '<span class="prod-nombre">'+p.nombre+'</span>'+
+      '<input class="prod-qty" type="number" min="0" value="'+(cant||'')+'" placeholder="0" '+
+        'id="qty-'+p.sku+'" onchange="recalcPedido()" inputmode="numeric">'+
+      (esCustom
+        ? '<input class="prod-qty" type="number" style="width:90px;color:var(--accent2);" value="'+(precio||'')+'" placeholder="precio" '+
+          'id="pr-input-'+p.sku+'" onchange="recalcPedido()" inputmode="numeric">'
+        : '<span class="prod-precio" id="pr-'+p.sku+'">'+fmt(precio)+'</span>'
+      )+
+    '</div>';
+  }).join('');
+
+  document.getElementById('ped-productos').innerHTML = html;
+  recalcPedido();
+}
+
+function recalcPedido(){
+  const clienteId = document.getElementById('ped-cliente-id').value;
+  const clienteTipo = document.getElementById('ped-cliente-tipo').value||'particular';
+  const prods = clienteId ? getProductosParaCliente(clienteId, clienteTipo) : getProductos();
+  const precios = getPrecios();
+  const tipoPrecio = document.getElementById('ped-tipo-precio').value;
+  let total = 0;
+  var esCustom = tipoPrecio === 'custom';
+  prods.forEach(function(p){
+    const el = document.getElementById('qty-'+p.sku);
+    const pr = precios[p.sku]||{};
+    var precio;
+    if(esCustom){
+      var customEl = document.getElementById('pr-input-'+p.sku);
+      precio = customEl ? (parseFloat(customEl.value)||0) : (pr[tipoPrecio]||pr.partic||0);
+    } else {
+      precio = pr[tipoPrecio]||pr.partic||0;
+      const prEl = document.getElementById('pr-'+p.sku);
+      if(prEl) prEl.textContent = fmt(precio);
+    }
+    if(el){
+      const cant = parseInt(el.value)||0;
+      total += cant * precio;
+    }
+  });
+  // Ajuste (descuento/recargo)
+  var ajusteTipo = (document.getElementById('ped-ajuste-tipo')||{}).value||'none';
+  var ajusteVal = parseFloat((document.getElementById('ped-ajuste-val')||{}).value)||0;
+  var ajusteAmt = 0;
+  var ajusteHtml = '';
+  if(ajusteTipo !== 'none' && ajusteVal > 0){
+    if(ajusteTipo === 'desc-pct'){ ajusteAmt = -Math.round(total * ajusteVal/100); ajusteHtml = 'Descuento '+ajusteVal+'%: '+fmt(ajusteAmt); }
+    else if(ajusteTipo === 'desc-amt'){ ajusteAmt = -ajusteVal; ajusteHtml = 'Descuento: '+fmt(ajusteAmt); }
+    else if(ajusteTipo === 'rec-pct'){ ajusteAmt = Math.round(total * ajusteVal/100); ajusteHtml = 'Recargo '+ajusteVal+'%: +'+fmt(ajusteAmt); }
+    else if(ajusteTipo === 'rec-amt'){ ajusteAmt = ajusteVal; ajusteHtml = 'Recargo: +'+fmt(ajusteAmt); }
+  }
+  var totalAjustado = total + ajusteAmt;
+
+  // IVA 21%
+  var ivaEl = document.getElementById('ped-iva');
+  var ivaVal = ivaEl ? ivaEl.value : 'no';
+  var totalFinal = totalAjustado;
+  var ivaHtml = '';
+  if(ivaVal === 'si'){
+    var ivaAmt = Math.round(totalAjustado * 0.21);
+    totalFinal = totalAjustado + ivaAmt;
+    ivaHtml = '<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Subtotal</span><span>'+fmt(totalAjustado)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;"><span>IVA 21%</span><span>'+fmt(ivaAmt)+'</span></div>';
+  }
+
+  var totalEl = document.getElementById('ped-total');
+  var ivaDetailEl = document.getElementById('ped-iva-detail');
+  var ajusteDetailEl = document.getElementById('ped-ajuste-detail');
+  if(totalEl) totalEl.textContent = fmt(totalFinal);
+  if(ivaDetailEl) ivaDetailEl.innerHTML = ivaHtml;
+  if(ajusteDetailEl) ajusteDetailEl.innerHTML = ajusteHtml ? '<div style="display:flex;justify-content:space-between;color:'+(ajusteAmt<0?'var(--green)':'var(--amber)')+';">'+ajusteHtml+'</div>' : '';
+
+  // Store for guardarPedido
+  window._pedAjuste = {tipo:ajusteTipo, val:ajusteVal, amt:ajusteAmt};
+  window._pedTotalFinal = totalFinal;
+  window._pedTotalNeto = total;
+}
+
+function buscarCliente(q){
+  const sugg = document.getElementById('ped-cliente-sugg');
+  if(!q || q.length < 2){ sugg.style.display='none'; return; }
+  const clientes = getClientes();
+  const filtrados = clientes.filter(function(c){
+    return (c.nombre||c.razonSocial||'').toLowerCase().includes(q.toLowerCase());
+  }).slice(0,8);
+
+  if(!filtrados.length){ sugg.style.display='none'; return; }
+  sugg.style.display = 'block';
+  sugg.innerHTML = filtrados.map(function(c){
+    const nombre = c.nombre||c.razonSocial||'Sin nombre';
+    const tipo = c.tipo||'particular';
+    return '<div style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:14px;" '+
+      'onclick="seleccionarCliente(\''+c.id+'\',\''+nombre.replace(/'/g,"\\'")+'\',\''+tipo+'\',\''+((c.direccion||c.domicilio||'')).replace(/'/g,"\\'")+'\')">'+
+      nombre+'<span style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;">'+tipo.toUpperCase()+'</span>'+
+    '</div>';
+  }).join('');
+}
+
+function seleccionarCliente(id, nombre, tipo, dir, clienteObj){
+  document.getElementById('ped-cliente-id').value = id;
+  document.getElementById('ped-cliente-tipo').value = tipo;
+  document.getElementById('ped-cliente-search').value = nombre;
+  document.getElementById('ped-cliente-sugg').style.display = 'none';
+
+  if(dir) document.getElementById('ped-direccion').value = dir;
+
+  // Auto-set precio type
+  if(tipo === 'mayorista' || tipo === 'local'){
+    document.getElementById('ped-tipo-precio').value = 'may';
+  } else {
+    document.getElementById('ped-tipo-precio').value = 'partic';
+  }
+
+  // Show client info panel
+  const info = document.getElementById('ped-cliente-info');
+  if(info && clienteObj){
+    var tipoLabel = tipo==='mayorista'||tipo==='local' ? 'MAYORISTA' : 'PARTICULAR';
+    var tipoColor = tipo==='mayorista'||tipo==='local' ? 'var(--amber)' : 'var(--blue)';
+    var deuda = clienteObj.deuda||0;
+    var zona = clienteObj.zona||clienteObj.localidad||'';
+    var iva = clienteObj.iva||clienteObj.factura||'no';
+    var ivaLabel = iva==='si'?'Con factura (IVA)':iva==='ri'?'Resp. Inscripto':'Sin factura';
+
+    info.style.display = 'block';
+    info.innerHTML =
+      '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:8px;margin-top:8px;">' +
+        '<span style="font-family:var(--mono);font-size:10px;font-weight:600;color:'+tipoColor+';">'+tipoLabel+'</span>' +
+        (zona?'<span style="font-family:var(--mono);font-size:11px;color:var(--text3);">📍 '+zona+'</span>':'') +
+        '<span style="font-family:var(--mono);font-size:11px;color:var(--text3);">🧾 '+ivaLabel+'</span>' +
+        (deuda>0?'<span style="font-family:var(--mono);font-size:11px;color:var(--amber);">⚠ Deuda: '+fmt(deuda)+'</span>':'') +
+        (clienteObj.telefono?'<span style="font-family:var(--mono);font-size:11px;color:var(--text3);">📞 '+clienteObj.telefono+'</span>':'') +
+      '</div>';
+  } else if(info){
+    info.style.display = 'none';
+  }
+
+  recalcPedido();
+}
+
+function seleccionarClienteIdx(i){
+  const c = (window._clientesBusqueda||[])[i];
+  if(!c) return;
+  const nombre = c.nombre||c.razonSocial||'Sin nombre';
+  const tipo = c.tipo||'particular';
+  const dir = c.direccion||c.domicilio||'';
+  seleccionarCliente(c.id, nombre, tipo, dir, c);
+}
+
+function guardarPedido(){
+  const clienteId = document.getElementById('ped-cliente-id').value;
+  const clienteNombre = document.getElementById('ped-cliente-search').value.trim();
+  if(!clienteNombre){ toast('Seleccioná un cliente', true); return; }
+
+  const prods = getProductos();
+  const precios = getPrecios();
+  const tipoPrecio = document.getElementById('ped-tipo-precio').value;
+  const productos = [];
+  let total = 0;
+
+  prods.forEach(function(p){
+    const el = document.getElementById('qty-'+p.sku);
+    const cant = parseInt(el?.value)||0;
+    if(!cant) return;
+    const pr = precios[p.sku]||{};
+    const precio = pr[tipoPrecio]||pr.partic||0;
+    productos.push({sku:p.sku, nombre:p.nombre, cant, precio});
+    total += cant * precio;
+  });
+
+  if(!productos.length){ toast('Agregá al menos un producto', true); return; }
+
+  const pedido = {
+    id: editandoPedidoId || uid(),
+    clienteId, clienteNombre,
+    clienteTipo: document.getElementById('ped-cliente-tipo').value,
+    fecha: document.getElementById('ped-fecha').value || hoy(),
+    direccion: document.getElementById('ped-direccion').value.trim(),
+    tipoPrecio,
+    iva: (document.getElementById('ped-iva')||{}).value||'no',
+    cuit: (document.getElementById('ped-cuit')||{}).value||'',
+    ajuste: window._pedAjuste||null,
+    productos,
+    totalNeto: window._pedTotalNeto||total,
+    total: window._pedTotalFinal||total,
+    notas: (document.getElementById('ped-notas-cliente')||{}).value||'',
+    estado: 'pendiente',
+    creadoEn: new Date().toISOString()
+  };
+
+  // Get zona from select (may have been edited)
+  var zonaSelEl = document.getElementById('ped-zona');
+  var horarioEl = document.getElementById('ped-horario');
+  pedido.clienteZona = zonaSelEl ? zonaSelEl.value : '';
+  pedido.horario = horarioEl ? horarioEl.value : '';
+
+  // Update cliente record with any changes
+  try{
+    var cl2 = JSON.parse(localStorage.getItem('fy_clientes')||'{}');
+    var isFlatArray = Array.isArray(cl2);
+    var arr2 = isFlatArray ? cl2 : [].concat(cl2.locales||[]).concat(cl2.particulares||[]);
+    var clienteRec = arr2.find(function(c){ return String(c.id)===String(clienteId); });
+    if(clienteRec){
+      if(pedido.direccion) clienteRec.direccion = pedido.direccion;
+      if(pedido.clienteZona) clienteRec.zona = pedido.clienteZona;
+      if(pedido.horario) clienteRec.horario = pedido.horario;
+      // Save custom prices if tipoPrecio === 'custom'
+      if(pedido.tipoPrecio === 'custom' && pedido.productos && pedido.productos.length){
+        if(!clienteRec.preciosCustom) clienteRec.preciosCustom = {};
+        pedido.productos.forEach(function(pr){
+          if(pr.precio > 0) clienteRec.preciosCustom[pr.sku] = pr.precio;
+        });
+      }
+      if(!isFlatArray){
+        localStorage.setItem('fy_clientes', JSON.stringify(cl2));
+      } else {
+        localStorage.setItem('fy_clientes', JSON.stringify(cl2));
+      }
+    }
+  }catch(e){}
+
+  if(editandoPedidoId){
+    const idx = ops.pedidos.findIndex(function(p){ return p.id===editandoPedidoId; });
+    if(idx > -1) ops.pedidos[idx] = {...ops.pedidos[idx], ...pedido, estado: ops.pedidos[idx].estado};
+  } else {
+    ops.pedidos.unshift(pedido);
+  }
+
+  saveOps();
+  cerrarModal('modal-pedido');
+  renderPedidos();
+  updateBadges();
+  toast(editandoPedidoId ? 'Pedido actualizado' : 'Pedido creado — ' + fmt(total));
+}
+
+// ============================================================
+// CLIENTE NUEVO RÁPIDO
+// ============================================================
+function abrirModalClienteNuevo(){
+  var searchVal = document.getElementById('ped-cliente-search').value.trim();
+  document.getElementById('cn-nombre').value = searchVal;
+  document.getElementById('cn-tipo').value = 'particular';
+  document.getElementById('cn-zona').value = '';
+  document.getElementById('cn-tel').value = '';
+  document.getElementById('cn-dir').value = '';
+  document.getElementById('cn-horario').value = '';
+  document.getElementById('cn-notas').value = '';
+  if(document.getElementById('cn-cuit')) document.getElementById('cn-cuit').value = '';
+  toggleCnMayorista();
+  document.getElementById('modal-cliente-nuevo').classList.remove('hidden');
+  setTimeout(function(){ document.getElementById('cn-nombre').focus(); }, 100);
+}
+
+function toggleCnMayorista(){
+  var tipo = document.getElementById('cn-tipo').value;
+  var isMay = tipo === 'mayorista';
+  var sub = document.getElementById('cn-subtipo-wrap');
+  var campos = document.getElementById('cn-campos-mayorista');
+  if(sub) sub.style.display = isMay ? 'block' : 'none';
+  if(campos) campos.style.display = isMay ? 'block' : 'none';
+}
+
+function guardarClienteNuevo(){
+  const nombre = document.getElementById('cn-nombre').value.trim();
+  if(!nombre){ toast('Ingresá un nombre', true); return; }
+  const tipo = document.getElementById('cn-tipo').value;
+  const tel = document.getElementById('cn-tel').value.trim();
+  const dir = document.getElementById('cn-dir').value.trim();
+
+  const id = uid();
+  const cliente = {id, nombre, tipo, telefono:tel, direccion:dir, deuda:0, creadoEn: new Date().toISOString()};
+
+  // Save to clientes
+  try{
+    const cl = JSON.parse(localStorage.getItem('fy_clientes')||'{}');
+    if(!cl.particulares) cl.particulares = [];
+    if(!cl.locales) cl.locales = [];
+    if(tipo === 'particular') cl.particulares.unshift(cliente);
+    else cl.locales.unshift(cliente);
+    localStorage.setItem('fy_clientes', JSON.stringify(cl));
+  }catch(e){}
+
+  // Auto-select in pedido form
+  seleccionarCliente(id, nombre, tipo, dir);
+  cerrarModal('modal-cliente-nuevo');
+  toast('Cliente creado y seleccionado');
+}
+
+// ============================================================
+// RECORRIDOS
+// ============================================================
+function renderRecorridos(){
+  const activos = ops.recorridos.filter(function(r){ return r.estado !== 'cerrado'; });
+  const bdg = document.getElementById('bdg-recorridos');
+  bdg.style.display = activos.length ? 'inline-block' : 'none';
+  bdg.textContent = activos.length;
+
+  const lista = document.getElementById('lista-recorridos');
+  if(!ops.recorridos.filter(function(r){ return r.estado!=='cerrado'; }).length && !ops.recorridos.length){
+    lista.innerHTML = '<div class="empty"><div class="empty-icon">🚐</div>Sin recorridos activos<br><span style="font-size:10px;">Armá uno con los pedidos pendientes</span></div>';
+    return;
+  }
+
+  const activos2 = ops.recorridos.filter(function(r){ return r.estado!=='cerrado'; });
+  lista.innerHTML = activos2.map(function(r){
+    const peds = r.pedidoIds.map(function(id){ return ops.pedidos.find(function(p){ return p.id===id; }); }).filter(Boolean);
+    const total = peds.reduce(function(s,p){ return s+p.total; }, 0);
+    const entregados = peds.filter(function(p){ return p.estado==='entregado'||p.estado==='cobrado'; }).length;
+    const estadoRec = r.estado==='camino'?'EN CAMINO':r.estado==='cargando'?'CARGANDO':r.estado==='finalizado'?'FINALIZADO':'ARMADO';
+    const estadoClass = r.estado==='camino'?'est-camino':r.estado==='cargando'?'est-asignado':r.estado==='finalizado'?'est-entregado':'est-pendiente';
+    const nombreDisplay = r.nombre||r.chofer.toUpperCase();
+
+    return '<div class="rec-card">'+
+      '<div class="rec-header">'+
+        '<div>'+
+          '<div class="rec-chofer">'+nombreDisplay+'</div>'+
+          '<div class="rec-stats">'+r.fecha+' · '+peds.length+' pedidos · '+fmt(total)+'</div>'+
+        '</div>'+
+        '<div style="text-align:right;">'+
+          '<span class="estado '+estadoClass+'">'+estadoRec+'</span>'+
+          '<div style="font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:4px;">'+entregados+'/'+peds.length+' entregas</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="rec-pedidos">'+
+        peds.map(function(p){
+          const est = p.estado==='entregado'?'est-entregado':p.estado==='cobrado'?'est-cobrado':'est-asignado';
+          const estLbl = p.estado==='entregado'?'ENTREGADO':p.estado==='cobrado'?'COBRADO':'PENDIENTE';
+          return '<div class="rec-pedido-row">'+
+            '<div>'+
+              '<div style="font-weight:500;font-size:14px;">'+p.clienteNombre+'</div>'+
+              '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);">'+(p.direccion||'Sin dirección')+'</div>'+
+            '</div>'+
+            '<div style="text-align:right;">'+
+              '<div style="font-family:var(--mono);font-weight:600;">'+fmt(p.total)+'</div>'+
+              '<span class="estado '+est+'">'+estLbl+'</span>'+
+            '</div>'+
+          '</div>';
+        }).join('')+
+      '</div>'+
+      '<div style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);flex-wrap:wrap;">'+
+        (r.estado==='armado'?'<button class="btn btn-primary btn-sm" style="flex:1;" data-rid="'+r.id+'" onclick="salirRecBtn(this)">&#x1F4E6; ARMAR CAMIONETA</button>':' ')+
+        (r.estado==='cargando'?'<button class="btn btn-primary btn-sm" style="flex:1;background:var(--amber);" data-cid="'+r.chofer+'" onclick="irVistaChoferBtn(this)">&#x1F4E6; CARGANDO — '+r.chofer.toUpperCase()+'</button>':' ')+
+        (r.estado==='camino'?'<button class="btn btn-primary btn-sm" style="flex:1;" data-cid="'+r.chofer+'" onclick="irVistaChoferBtn(this)">&#x1F697; REPARTO — '+r.chofer.toUpperCase()+'</button>'+' <button class="btn btn-ghost btn-sm" data-rid="'+r.id+'" onclick="abrirCierreAdminBtn(this)">CERRAR</button>':' ')+
+        (r.estado==='finalizado'?'<button class="btn btn-green btn-sm" style="flex:1;" data-rid="'+r.id+'" onclick="abrirCierreAdminBtn(this)">&#x2705; CERRAR Y REGISTRAR — '+r.chofer.toUpperCase()+'</button>':' ')+
+        '<button class="btn btn-ghost btn-sm" data-rid="'+r.id+'" onclick="eliminarRecBtn(this)">&#x2715;</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function actualizarNombreRec(){
+  var chofer = (document.getElementById('rec-chofer')||{}).value||'';
+  var fecha = (document.getElementById('rec-fecha')||{}).value||hoy();
+  if(!chofer){ document.getElementById('rec-nombre-preview').textContent = '—'; return; }
+  // Count existing recorridos for this chofer on this date
+  var existing = ops.recorridos.filter(function(r){
+    return r.chofer===chofer && r.fecha===fecha && r.estado!=='cerrado';
+  }).length;
+  var choferNombre = chofer.toUpperCase();
+  // Try to get display name from select
+  var sel = document.getElementById('rec-chofer');
+  if(sel&&sel.selectedOptions&&sel.selectedOptions[0]) choferNombre = sel.selectedOptions[0].text.toUpperCase();
+  var nombre = existing === 0 ? choferNombre : choferNombre + ' ' + (existing+1);
+  document.getElementById('rec-nombre-preview').textContent = nombre;
+}
+
+// Estado del armado de recorrido
+var recSeleccionados = []; // [{pedidoId, orden}] — en orden de entrega
+
+function abrirModalRecorrido(){
+  const pendientes = ops.pedidos.filter(function(p){ return p.estado==='pendiente'; });
+  if(!pendientes.length){ toast('No hay pedidos pendientes', true); return; }
+  recSeleccionados = [];
+
+  // Populate choferes from CONFIG
+  const cfg = getCfg();
+  const choferes = (cfg.empleados||[]).filter(function(e){ return e.rol==='logistica'&&e.activo; });
+  const choferSel = document.getElementById('rec-chofer');
+  // Filter out profe — not a driver
+  var choferesFiltrados = choferes.filter(function(e){ return e.id!=='profe'&&(e.nombre||'').toUpperCase()!=='EL PROFE'&&(e.nombre||'').toUpperCase()!=='PROFE'; });
+  choferSel.innerHTML = choferesFiltrados.length ?
+    choferesFiltrados.map(function(e){ return '<option value="'+e.id+'">'+e.nombre+'</option>'; }).join('') :
+    '<option value="mauro">MAURO</option><option value="maxi">MAXI</option><option value="nacho">NACHO</option>';
+
+  // Populate depositos
+  const deps = cfg.depositos||[{id:'tigre',nombre:'Tigre'},{id:'pilar',nombre:'Pilar'}];
+  document.getElementById('rec-dep').innerHTML = deps.map(function(d){ return '<option value="'+d.id+'">'+d.nombre+'</option>'; }).join('');
+
+  // Update zona filter from CONFIG
+  try{
+    const zonas = cfg.zonas||['Tigre','San Isidro','Pilar','Escobar','CABA','Zona Oeste','Zona Sur'];
+    const sel = document.getElementById('rec-zona-filtro');
+    sel.innerHTML = '<option value="">Todas las zonas</option>' + zonas.map(function(z){ return '<option value="'+z+'">'+z+'</option>'; }).join('');
+  }catch(e){}
+
+  // Set default fecha
+  var fechaEl = document.getElementById('rec-fecha');
+  if(fechaEl) fechaEl.value = hoy();
+  actualizarNombreRec();
+  filtrarPedidosRec();
+  document.getElementById('modal-recorrido').classList.remove('hidden');
+}
+
+function getKgPedido(p){
+  // Calculate kg from productos
+  const KG = {FY:4,B4:4,B8:8,PA8:8,PA10:10,BB10:10,BB3:3,LQB10:10,LQC10:10,LESP10:10};
+  return (p.productos||[]).reduce(function(s,pr){
+    return s + (pr.cant||0) * (KG[pr.sku]||4);
+  }, 0);
+}
+
+function filtrarPedidosRec(){
+  const zona = document.getElementById('rec-zona-filtro').value;
+  var pendientes = ops.pedidos.filter(function(p){ return p.estado==='pendiente'; });
+  if(zona) pendientes = pendientes.filter(function(p){
+    return p.clienteZona===zona || p.zona===zona;
+  });
+  // Exclude already selected
+  const selIds = recSeleccionados.map(function(s){ return s.pedidoId; });
+  pendientes = pendientes.filter(function(p){ return selIds.indexOf(p.id)<0; });
+
+  const cont = document.getElementById('rec-pedidos-disp');
+  if(!pendientes.length){
+    cont.innerHTML = '<div style="color:var(--text3);font-family:var(--mono);font-size:11px;text-align:center;padding:16px;">Sin pedidos en esta zona</div>';
+    return;
+  }
+  cont.innerHTML = pendientes.map(function(p){
+    const dir = p.direccion||'Sin dirección';
+    const kg = getKgPedido(p);
+    const zona = p.clienteZona||p.zona||'';
+    return '<div class="rec-disp-card" onclick="agregarARecorrido(\'' + p.id + '\')">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+p.clienteNombre+'</div>'+
+          '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+dir+'</div>'+
+          (zona?'<div style="font-family:var(--mono);font-size:9px;color:var(--accent2);margin-top:1px;">'+zona+'</div>':'')+
+        '</div>'+
+        '<div style="text-align:right;flex-shrink:0;">'+
+          '<div style="font-family:var(--mono);font-size:12px;font-weight:600;">'+fmt(p.total)+'</div>'+
+          '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">'+kg+'kg</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="margin-top:6px;display:flex;align-items:center;justify-content:space-between;">'+
+        '<button class="rec-copy-btn" data-pid="'+p.id+'" onclick="event.stopPropagation();copiarDirPed(this)" style="font-size:10px;">&#128203; Copiar dir.</button>'+
+        '<span style="font-family:var(--mono);font-size:10px;color:var(--accent2);">+ Agregar →</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function copiarDirBtn(btn){
+  var dir = btn.getAttribute('data-dir');
+  copiarDir(dir);
+}
+
+function copiarDirPed(btn){
+  var pid = btn.getAttribute('data-pid');
+  var p = ops.pedidos.find(function(x){ return x.id===pid; });
+  if(p) copiarDir(p.direccion||p.clienteNombre);
+}
+
+function copiarDir(dir){
+  navigator.clipboard.writeText(dir).then(function(){
+    toast('Dirección copiada: '+dir);
+  }).catch(function(){
+    // Fallback
+    const el = document.createElement('textarea');
+    el.value = dir; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    toast('Copiada: '+dir);
+  });
+}
+
+function agregarARecorrido(pedidoId){
+  if(recSeleccionados.find(function(s){ return s.pedidoId===pedidoId; })) return;
+  recSeleccionados.push({pedidoId, orden: recSeleccionados.length+1});
+  filtrarPedidosRec();
+  renderSeleccionados();
+  actualizarBarraCarga();
+}
+
+function quitarDeRecorrido(pedidoId){
+  recSeleccionados = recSeleccionados.filter(function(s){ return s.pedidoId!==pedidoId; });
+  // Re-number
+  recSeleccionados.forEach(function(s,i){ s.orden = i+1; });
+  filtrarPedidosRec();
+  renderSeleccionados();
+  actualizarBarraCarga();
+}
+
+function moverOrdenBtn(btn){
+  var pid = btn.getAttribute('data-pid');
+  var d = parseInt(btn.getAttribute('data-dir'));
+  moverOrden(pid, d);
+}
+function quitarRecBtn(btn){
+  quitarDeRecorrido(btn.getAttribute('data-pid'));
+}
+function moverOrden(pedidoId, dir){
+  const idx = recSeleccionados.findIndex(function(s){ return s.pedidoId===pedidoId; });
+  if(idx<0) return;
+  const newIdx = idx + dir;
+  if(newIdx<0||newIdx>=recSeleccionados.length) return;
+  const tmp = recSeleccionados[idx];
+  recSeleccionados[idx] = recSeleccionados[newIdx];
+  recSeleccionados[newIdx] = tmp;
+  recSeleccionados.forEach(function(s,i){ s.orden = i+1; });
+  renderSeleccionados();
+}
+
+function renderSeleccionados(){
+  const cont = document.getElementById('rec-pedidos-sel');
+  const empty = document.getElementById('rec-empty-sel');
+  if(!recSeleccionados.length){
+    cont.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  cont.innerHTML = recSeleccionados.map(function(s, i){
+    const p = ops.pedidos.find(function(x){ return x.id===s.pedidoId; });
+    if(!p) return '';
+    const kg = getKgPedido(p);
+    return '<div class="rec-sel-card">'+
+      '<div class="orden">'+(i+1)+'</div>'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:13px;font-weight:600;">'+p.clienteNombre+'</div>'+
+        '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">'+fmt(p.total)+' · '+kg+'kg</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:2px;">'+
+        (i>0?'<button class="btn-icon" style="font-size:11px;" data-pid="'+p.id+'" data-dir="-1" onclick="moverOrdenBtn(this)">&#9650;</button>':' ')+
+        (i<recSeleccionados.length-1?'<button class="btn-icon" style="font-size:11px;" data-pid="'+p.id+'" data-dir="1" onclick="moverOrdenBtn(this)">&#9660;</button>':' ')+
+      '</div>'+
+      '<button class="btn-icon" style="color:var(--red);" data-pid="'+p.id+'" onclick="quitarRecBtn(this)">&#x2715;</button>'+
+    '</div>';
+  }).join('');
+}
+
+function actualizarBarraCarga(){
+  const MAX_KG = 2200;
+  var totalKg = 0, totalPesos = 0;
+  recSeleccionados.forEach(function(s){
+    const p = ops.pedidos.find(function(x){ return x.id===s.pedidoId; });
+    if(p){ totalKg += getKgPedido(p); totalPesos += p.total; }
+  });
+  const pct = Math.min(100, Math.round(totalKg/MAX_KG*100));
+  const bar = document.getElementById('rec-kg-bar');
+  const lbl = document.getElementById('rec-kg-label');
+  const cnt = document.getElementById('rec-pedidos-count');
+  const tot = document.getElementById('rec-total-preview');
+  if(bar){ bar.style.width=pct+'%'; bar.style.background=totalKg>MAX_KG?'var(--red)':totalKg>MAX_KG*0.8?'var(--amber)':'var(--green)'; }
+  if(lbl){ lbl.textContent=totalKg.toLocaleString('es-AR')+' / 2.200 kg'+(totalKg>MAX_KG?' ⚠ EXCEDE':''); lbl.style.color=totalKg>MAX_KG?'var(--red)':'var(--text)'; }
+  if(cnt) cnt.textContent = recSeleccionados.length;
+  if(tot) tot.textContent = fmt(totalPesos);
+}
+
+function calcRecTotal(){
+  actualizarBarraCarga();
+}
+
+function crearRecorrido(){
+  if(!recSeleccionados.length){ toast('Seleccioná al menos un pedido', true); return; }
+
+  const chofer = document.getElementById('rec-chofer').value;
+  const dep = document.getElementById('rec-dep').value;
+  const fechaRec = (document.getElementById('rec-fecha')||{}).value||hoy();
+  const nombreRec = (document.getElementById('rec-nombre-preview')||{}).textContent||chofer.toUpperCase();
+  const pedidoIds = recSeleccionados.map(function(s){ return s.pedidoId; });
+
+  var totalKg = 0;
+  recSeleccionados.forEach(function(s){
+    const p = ops.pedidos.find(function(x){ return x.id===s.pedidoId; });
+    if(p) totalKg += getKgPedido(p);
+  });
+
+  if(totalKg > 2200){
+    if(!confirm('La carga supera los 2.200 kg ('+totalKg+' kg). ¿Confirmás igual?')) return;
+  }
+
+  const rec = {
+    id: uid(),
+    chofer, dep,
+    nombre: nombreRec,
+    fecha: fechaRec,
+    pedidoIds,
+    ordenEntrega: recSeleccionados.map(function(s){ return s.pedidoId; }),
+    estado: 'armado',
+    cobros: {},
+    totalKg,
+    creadoEn: new Date().toISOString()
+  };
+
+  pedidoIds.forEach(function(id){
+    const p = ops.pedidos.find(function(x){ return x.id===id; });
+    if(p){ p.estado = 'asignado'; p.recorridoId = rec.id; }
+  });
+
+  ops.recorridos.unshift(rec);
+  saveOps();
+  recSeleccionados = [];
+  cerrarModal('modal-recorrido');
+  setTab('recorridos', document.querySelectorAll('.tab')[1]);
+  toast('Recorrido armado — '+pedidoIds.length+' pedidos · '+totalKg+'kg');
+}
+
+function salirRecorrido(id){
+  const r = ops.recorridos.find(function(x){ return x.id===id; });
+  if(!r) return;
+  // Va a estado 'cargando' — el chofer carga la camioneta primero
+  r.estado = 'cargando';
+  r.cargandoEn = new Date().toISOString();
+  saveOps();
+  renderRecorridos();
+  toast('Recorrido en carga — el chofer está armando la camioneta');
+}
+
+var cargaRecId = null;
+var repartoRecId = null;
+
+function verVistaCarga(id){
+  cargaRecId = id;
+  const r = ops.recorridos.find(function(x){ return x.id===id; });
+  if(!r) return;
+
+  document.getElementById('carga-title').textContent = 'CARGAR — '+r.chofer.toUpperCase();
+
+  // Get pedidos in REVERSE order (last delivery loaded first)
+  const orden = r.ordenEntrega||r.pedidoIds;
+  const pedidsRev = orden.slice().reverse().map(function(pid){ return ops.pedidos.find(function(p){ return p.id===pid; }); }).filter(Boolean);
+
+  // Build consolidated product list
+  const productos = {};
+  pedidsRev.forEach(function(p, i){
+    (p.productos||[]).forEach(function(pr){
+      if(!productos[pr.sku]) productos[pr.sku] = {sku:pr.sku, nombre:pr.nombre, cant:0, clientes:[]};
+      productos[pr.sku].cant += pr.cant;
+      productos[pr.sku].clientes.push((orden.length - i)+'. '+p.clienteNombre+' ('+pr.cant+')');
+    });
+  });
+
+  // Render: first consolidated list, then per-client in reverse order
+  var html = '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;">RESUMEN TOTAL A CARGAR</div>';
+  html += '<div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:16px;">';
+  Object.values(productos).forEach(function(p){
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);">'+
+      '<span style="font-family:var(--mono);font-size:13px;">'+p.sku+' — '+p.nombre+'</span>'+
+      '<span style="font-family:var(--display);font-size:18px;color:var(--accent2);">'+p.cant+'</span>'+
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;">ORDEN DE CARGA (último entra primero)</div>';
+  pedidsRev.forEach(function(p, i){
+    const numCarga = i+1;
+    const numEntrega = pedidsRev.length - i;
+    html += '<div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:8px;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'+
+        '<div>'+
+          '<span style="font-family:var(--display);font-size:20px;color:var(--text3);">'+numCarga+'° CARGA</span>'+
+          '<span style="font-family:var(--mono);font-size:10px;color:var(--accent2);margin-left:8px;">(entrega '+numEntrega+'°)</span>'+
+        '</div>'+
+        '<div style="font-weight:600;">'+p.clienteNombre+'</div>'+
+      '</div>'+
+      (p.productos||[]).map(function(pr){
+        return '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--text2);padding:2px 0;">'+
+          '<span>'+pr.sku+'</span><span style="color:var(--text);font-weight:600;">'+pr.cant+' u</span></div>';
+      }).join('')+
+    '</div>';
+  });
+
+  document.getElementById('carga-lista').innerHTML = html;
+
+  var totalKg = 0;
+  pedidsRev.forEach(function(p){ totalKg += getKgPedido(p); });
+  document.getElementById('carga-resumen').innerHTML =
+    '<div style="display:flex;justify-content:space-between;"><span style="font-family:var(--mono);font-size:11px;color:var(--text3);">TOTAL KG</span><span style="font-family:var(--display);font-size:22px;color:var(--amber);">'+totalKg.toLocaleString('es-AR')+' kg</span></div>'+
+    '<div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="font-family:var(--mono);font-size:11px;color:var(--text3);">PEDIDOS</span><span style="font-family:var(--mono);font-size:13px;">'+pedidsRev.length+'</span></div>';
+
+  document.getElementById('modal-carga').classList.remove('hidden');
+}
+
+function confirmarCargaYSalir(){
+  if(!cargaRecId) return;
+  comenzarReparto(cargaRecId);
+  cerrarModal('modal-carga');
+  verVistaReparto(cargaRecId);
+}
+
+function verVistaReparto(id){
+  repartoRecId = id;
+  const r = ops.recorridos.find(function(x){ return x.id===id; });
+  if(!r) return;
+
+  document.getElementById('reparto-title').textContent = 'REPARTO — '+r.chofer.toUpperCase();
+
+  const orden = r.ordenEntrega||r.pedidoIds;
+  const peds = orden.map(function(pid){ return ops.pedidos.find(function(p){ return p.id===pid; }); }).filter(Boolean);
+  const entregados = peds.filter(function(p){ return p.estado==='entregado'||p.estado==='cobrado'; }).length;
+  document.getElementById('reparto-sub').textContent = entregados+'/'+peds.length+' entregados · '+r.fecha;
+
+  var html = '';
+  peds.forEach(function(p, i){
+    var r2 = ops.recorridos.find(function(x){ return x.id===repartoRecId; })||{cobros:{}};
+    const entregado = p.estado==='entregado'||p.estado==='cobrado';
+    const dir = p.direccion||'Sin dirección';
+    // Override r with r2 in closure
+    var r = r2;
+    html += '<div style="background:'+(entregado?'rgba(46,204,113,0.08)':'var(--surface2)')+';border:1px solid '+(entregado?'var(--green)':'var(--border)')+';border-radius:10px;padding:14px;margin-bottom:10px;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'+
+        '<div style="display:flex;align-items:center;gap:10px;">'+
+          '<span style="font-family:var(--display);font-size:24px;color:var(--accent2);">'+(i+1)+'</span>'+
+          '<div>'+
+            '<div style="font-weight:600;font-size:15px;">'+p.clienteNombre+'</div>'+
+            '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);">'+(p.horario||'')+'</div>'+
+          '</div>'+
+        '</div>'+
+        (entregado?'<span class="estado est-entregado">✓ LISTO</span>':'')+
+      '</div>'+
+      '<div style="background:var(--surface);border-radius:7px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">'+
+        '<span style="font-family:var(--mono);font-size:12px;color:var(--text2);">'+dir+'</span>'+
+        '<button class="rec-copy-btn" data-dir="'+dir.replace(/"/g,'&quot;')+'" onclick="copiarDirBtn(this)">📋</button>'+
+      '</div>'+
+      '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:10px;">'+
+        (p.productos||[]).map(function(pr){ return pr.cant+'x '+pr.sku; }).join(' · ')+' — '+fmt(p.total)+
+      '</div>'+
+      '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:8px;">'+(p.notas||'')+'</div>'+
+      (function(){
+        if(entregado){
+          var cobro = r.cobros&&r.cobros[p.id]||{};
+          var metodoLabel = cobro.metodo==='efectivo'?'💵 Efectivo '+fmt(cobro.monto||p.total):cobro.pagado?'📱 Transferencia ✓':'📱 Transf. PENDIENTE';
+          var metodoColor = cobro.metodo==='efectivo'?'var(--green)':cobro.pagado?'var(--blue)':'var(--amber)';
+          return '<div style="display:flex;align-items:center;justify-content:space-between;">'+
+            '<span style="font-family:var(--mono);font-size:12px;color:'+metodoColor+';">'+metodoLabel+'</span>'+
+            (!cobro.pagado&&cobro.metodo==='transferencia'?'<button class="btn btn-sm" style="background:rgba(52,152,219,0.15);color:var(--blue);border:none;" data-pid="'+p.id+'" onclick="marcarTransfPagada(this)">Confirmar pago</button>':'')+
+          '</div>';
+        }
+        return '<button class="btn btn-green btn-full" data-pid="'+p.id+'" onclick="marcarEntregadoReparto(this)">✓ ENTREGADO Y COBRAR</button>';
+      })()+
+    '</div>';
+  });
+
+  document.getElementById('reparto-lista').innerHTML = html;
+  document.getElementById('modal-reparto').classList.remove('hidden');
+}
+
+var cobrandoPedidoId = null;
+
+function marcarEntregadoReparto(btn){
+  cobrandoPedidoId = btn.getAttribute('data-pid');
+  const p = ops.pedidos.find(function(x){ return x.id===cobrandoPedidoId; });
+  if(!p) return;
+  // Show inline cobro form
+  var div = btn.parentNode;
+  div.innerHTML = renderCobroForm(p);
+}
+
+function renderCobroForm(p){
+  return '<div style="background:var(--surface3);border-radius:8px;padding:12px;margin-top:8px;">'+
+    '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:10px;letter-spacing:1px;">COBRO — '+p.clienteNombre+'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'+
+      '<button class="btn btn-sm" id="cobro-ef-btn" style="border:2px solid var(--border);background:var(--surface2);color:var(--text);" onclick="setCobroEf()">&#x1F4B5; Efectivo</button>'+
+      '<button class="btn btn-sm" id="cobro-tr-btn" style="border:2px solid var(--border);background:var(--surface2);color:var(--text);" onclick="setCobroTr()">&#x1F4F1; Transferencia</button>'+
+    '</div>'+
+    '<div id="cobro-ef-fields" style="display:none;margin-bottom:10px;">'+
+      '<div class="ff"><label>MONTO COBRADO</label>'+
+        '<input class="fi" type="number" id="cobro-monto-input" value="'+p.total+'" inputmode="numeric" placeholder="'+p.total+'">'+
+      '</div>'+
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px;">Total del pedido: '+fmt(p.total)+'</div>'+
+    '</div>'+
+    '<div id="cobro-tr-fields" style="display:none;margin-bottom:10px;">'+
+      '<div class="ff"><label>CAJA DESTINO</label><select class="fi" id="cobro-caja-sel">'+getCajasOpts()+'</select></div>'+
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--amber);margin-top:4px;">⏳ Queda pendiente hasta confirmar transferencia</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;">'+
+      '<button class="btn btn-green" style="flex:1;" onclick="confirmarCobroReparto()">✓ CONFIRMAR</button>'+
+      '<button class="btn btn-ghost btn-sm" data-pid="'+p.id+'" onclick="cancelarCobroBtn(this)">Cancelar</button>'+
+    '</div>'+
+  '</div>';
+}
+
+function getCajasOpts(){
+  var cfg = getCfg();
+  var cajas = (cfg.cajas&&cfg.cajas.pesos)||[{id:'financiera',nombre:'Financiera'},{id:'galicia-srl',nombre:'Galicia SRL'}];
+  return cajas.map(function(c){ return '<option value="'+c.id+'">'+c.nombre+'</option>'; }).join('');
+}
+
+var cobroMetodoActual = null;
+
+function setCobroEf(){ setCobro('efectivo'); }
+function setCobroTr(){ setCobro('transferencia'); }
+function setCobro(metodo){
+  cobroMetodoActual = metodo;
+  var efBtn = document.getElementById('cobro-ef-btn');
+  var trBtn = document.getElementById('cobro-tr-btn');
+  var efFields = document.getElementById('cobro-ef-fields');
+  var trFields = document.getElementById('cobro-tr-fields');
+  if(metodo==='efectivo'){
+    if(efBtn){ efBtn.style.borderColor='var(--green)'; efBtn.style.color='var(--green)'; }
+    if(trBtn){ trBtn.style.borderColor='var(--border)'; trBtn.style.color='var(--text)'; }
+    if(efFields) efFields.style.display='block';
+    if(trFields) trFields.style.display='none';
+  } else {
+    if(trBtn){ trBtn.style.borderColor='var(--blue)'; trBtn.style.color='var(--blue)'; }
+    if(efBtn){ efBtn.style.borderColor='var(--border)'; efBtn.style.color='var(--text)'; }
+    if(trFields) trFields.style.display='block';
+    if(efFields) efFields.style.display='none';
+  }
+}
+
+function cancelarCobroBtn(btn){ cancelarCobro(btn.getAttribute('data-pid')); }
+function cancelarCobro(pid){
+  verVistaReparto(repartoRecId);
+}
+
+function confirmarCobroReparto(){
+  if(!cobrandoPedidoId||!cobroMetodoActual){ toast('Elegí el método de pago', true); return; }
+  const p = ops.pedidos.find(function(x){ return x.id===cobrandoPedidoId; });
+  if(!p) return;
+  const r = ops.recorridos.find(function(x){ return x.id===repartoRecId; });
+  if(!r) return;
+
+  if(cobroMetodoActual==='efectivo'){
+    var montoEl = document.getElementById('cobro-monto-input');
+    var monto = parseFloat(montoEl?montoEl.value:p.total)||p.total;
+    var parcial = monto < p.total;
+    p.estado = 'entregado';
+    if(!r.cobros) r.cobros = {};
+    r.cobros[p.id] = {entregado:true, metodo:'efectivo', monto, pagado:true, parcial};
+    if(parcial){
+      // Register partial debt
+      p.deudaPendiente = p.total - monto;
+      actualizarDeudaCliente(p.clienteId, p.clienteNombre, p.total - monto, p.id);
+    }
+    toast('Cobrado en efectivo: '+fmt(monto)+(parcial?' — resta '+fmt(p.total-monto):''));
+  } else {
+    var cajaEl = document.getElementById('cobro-caja-sel');
+    var caja = cajaEl ? cajaEl.value : 'financiera';
+    p.estado = 'entregado';
+    if(!r.cobros) r.cobros = {};
+    r.cobros[p.id] = {entregado:true, metodo:'transferencia', monto:p.total, pagado:false, cajaTransf:caja};
+    // Add to client debt — to be cleared when transfer confirmed
+    actualizarDeudaCliente(p.clienteId, p.clienteNombre, p.total, p.id);
+    toast('Entregado — transferencia pendiente de '+p.clienteNombre);
+  }
+
+  saveOps();
+  cobroMetodoActual = null;
+  cobrandoPedidoId = null;
+  verVistaReparto(repartoRecId);
+  renderRecorridos();
+}
+
+function marcarTransfPagada(btn){
+  var pid = btn.getAttribute('data-pid');
+  var p = ops.pedidos.find(function(x){ return x.id===pid; });
+  var r = ops.recorridos.find(function(x){ return x.id===repartoRecId; });
+  if(!p||!r) return;
+  var cobro = r.cobros&&r.cobros[pid];
+  if(!cobro) return;
+
+  // Get caja from existing cobro
+  var caja = cobro.cajaTransf||'financiera';
+  cobro.pagado = true;
+  p.estado = 'cobrado';
+
+  // Clear debt from cliente and register in finanzas
+  try{
+    var cl = JSON.parse(localStorage.getItem('fy_clientes')||'{}');
+    var arr = Array.isArray(cl)?cl:[].concat(cl.locales||[]).concat(cl.particulares||[]);
+    var cliente = arr.find(function(c){ return String(c.id)===String(p.clienteId); });
+    if(cliente){ cliente.deuda = Math.max(0,(cliente.deuda||0)-p.total); }
+    localStorage.setItem('fy_clientes',JSON.stringify(cl));
+  }catch(e){}
+
+  registrarEnFinanzas(p.total, caja, 'Transf. '+p.clienteNombre, hoy());
+  saveOps();
+  verVistaReparto(repartoRecId);
+  toast('Transferencia confirmada — '+fmt(p.total)+' a '+caja);
+}
+
+function comenzarReparto(id){
+  const r = ops.recorridos.find(function(x){ return x.id===id; });
+  if(!r) return;
+  r.estado = 'camino';
+  r.salidaEn = new Date().toISOString();
+  r.pedidoIds.forEach(function(pid){
+    const p = ops.pedidos.find(function(x){ return x.id===pid; });
+    if(p) p.estado = 'camino';
+  });
+  saveOps();
+  renderRecorridos();
+  toast('¡Recorrido en camino! 🚐');
+}
+
+function eliminarRecorrido(id){
+  const r = ops.recorridos.find(function(x){ return x.id===id; });
+  if(!r) return;
+  if(!confirm('¿Eliminar este recorrido? Los pedidos vuelven a pendientes.')) return;
+  r.pedidoIds.forEach(function(pid){
+    const p = ops.pedidos.find(function(x){ return x.id===pid; });
+    if(p){ p.estado = 'pendiente'; p.recorridoId = null; }
+  });
+  ops.recorridos = ops.recorridos.filter(function(x){ return x.id!==id; });
+  saveOps(); renderRecorridos(); renderPedidos();
+}
+
+// ============================================================
+// CIERRE DE RECORRIDO
+// ============================================================
+function abrirCierreAdmin(recId){
+  var r = ops.recorridos.find(function(x){ return x.id===recId; });
+  if(!r) return;
+  recorridoCierreId = recId;
+
+  var peds = (r.ordenEntrega||r.pedidoIds).map(function(id){
+    return ops.pedidos.find(function(p){ return p.id===id; });
+  }).filter(Boolean);
+
+  var cobrados = []; // {nombre, monto, metodo}
+  var deudores = [];  // {nombre, monto}
+  var totalEfectivo = 0;
+  var gastos = (r.gastos||[]).reduce(function(s,g){ return s+g.monto; }, 0);
+
+  peds.forEach(function(p){
+    var c = r.cobros&&r.cobros[p.id]||{};
+    if(!c.entregado && !c.noEntregado) return; // sin marcar
+    if(c.noEntregado) return; // no entregado - vuelve a pendientes
+    if(c.metodo==='efectivo'){
+      totalEfectivo += c.monto||p.total;
+      cobrados.push({nombre:p.clienteNombre, monto:c.monto||p.total, metodo:'efectivo', parcial:c.monto<p.total, total:p.total});
+      if(c.monto < p.total) deudores.push({nombre:p.clienteNombre, monto:p.total-c.monto, clienteId:p.clienteId});
+    } else if(c.metodo==='transferencia'){
+      if(c.pagado){
+        cobrados.push({nombre:p.clienteNombre, monto:p.total, metodo:'transferencia', caja:c.cajaTransf});
+      } else {
+        deudores.push({nombre:p.clienteNombre, monto:p.total, clienteId:p.clienteId});
+      }
+    }
+  });
+
+  var aRendir = totalEfectivo - gastos;
+
+  var cfg = getCfg();
+  var cajasOpts = ((cfg.cajas&&cfg.cajas.pesos)||[
+    {id:'efectivo-tigre',nombre:'Efectivo Tigre'},
+    {id:'efectivo-pilar',nombre:'Efectivo Pilar'}
+  ]).map(function(c){ return '<option value="'+c.id+'">'+c.nombre+'</option>'; }).join('');
+
+  var cajaEl = document.getElementById('cierre-caja');
+  if(cajaEl) cajaEl.innerHTML = cajasOpts;
+
+  document.getElementById('cierre-title').textContent = 'CIERRE — '+r.chofer.toUpperCase()+' · '+r.fecha;
+
+  var html = '';
+
+  // EFECTIVO A RENDIR — lo primero, lo más importante
+  html += '<div style="background:var(--surface2);border-radius:12px;padding:18px;margin-bottom:16px;text-align:center;">'+
+    '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:6px;">EFECTIVO A RECIBIR</div>'+
+    '<div style="font-family:var(--display);font-size:48px;color:var(--accent2);">'+fmt(aRendir)+'</div>'+
+    (gastos>0?'<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:4px;">'+fmt(totalEfectivo)+' cobrado − '+fmt(gastos)+' gastos</div>':'')+
+  '</div>';
+
+  // QUIÉN PAGÓ
+  if(cobrados.length){
+    html += '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;">PAGARON ('+cobrados.length+')</div>';
+    html += '<div style="background:var(--surface2);border-radius:10px;margin-bottom:16px;overflow:hidden;">';
+    cobrados.forEach(function(c){
+      var color = c.metodo==='efectivo' ? 'var(--green)' : 'var(--blue)';
+      var icon = c.metodo==='efectivo' ? '💵' : '📱';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);">'+
+        '<div>'+
+          '<div style="font-weight:500;font-size:14px;">'+c.nombre+'</div>'+
+          (c.parcial?'<div style="font-family:var(--mono);font-size:10px;color:var(--amber);">Pago parcial — total '+fmt(c.total)+'</div>':'')+
+        '</div>'+
+        '<div style="text-align:right;">'+
+          '<div style="font-family:var(--mono);font-size:14px;color:'+color+';">'+icon+' '+fmt(c.monto)+'</div>'+
+        '</div>'+
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  // QUIÉN QUEDÓ DEBIENDO
+  if(deudores.length){
+    html += '<div style="font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:2px;margin-bottom:8px;">QUEDAN DEBIENDO ('+deudores.length+')</div>';
+    html += '<div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:10px;margin-bottom:16px;overflow:hidden;">';
+    deudores.forEach(function(d){
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(245,166,35,0.1);">'+
+        '<div style="font-weight:500;font-size:14px;">'+d.nombre+'</div>'+
+        '<div style="font-family:var(--mono);font-size:14px;color:var(--amber);">'+fmt(d.monto)+'</div>'+
+      '</div>';
+    });
+    html += '<div style="padding:10px 14px;font-family:var(--mono);font-size:10px;color:var(--amber);">Se suma a la deuda de cada cliente automáticamente al cerrar</div>';
+    html += '</div>';
+  }
+
+  // Gastos detalle
+  if(r.gastos&&r.gastos.length){
+    html += '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;">GASTOS DEL CHOFER</div>';
+    html += '<div style="background:var(--surface2);border-radius:10px;margin-bottom:16px;overflow:hidden;">';
+    r.gastos.forEach(function(g){
+      html += '<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">'+
+        '<span style="font-size:13px;">'+g.concepto+'</span>'+
+        '<span style="font-family:var(--mono);color:var(--red);">-'+fmt(g.monto)+'</span>'+
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('cierre-entregas').innerHTML = html;
+  document.getElementById('cierre-resumen').innerHTML = '';
+  document.getElementById('modal-cierre').classList.remove('hidden');
+}
+
+function abrirCierre(recId){
+  recorridoCierreId = recId;
+  const r = ops.recorridos.find(function(x){ return x.id===recId; });
+  if(!r) return;
+
+  const cfg = getCfg();
+  const cajasSel = document.getElementById('cierre-caja');
+  const cajas = (cfg.cajas&&cfg.cajas.pesos)||[];
+  cajasSel.innerHTML = cajas.length ?
+    cajas.map(function(c){ return '<option value="'+c.id+'">'+c.nombre+'</option>'; }).join('') :
+    '<option value="efectivo-tigre">Efectivo Tigre</option><option value="efectivo-pilar">Efectivo Pilar</option>';
+
+  document.getElementById('cierre-title').textContent = 'CIERRE — '+r.chofer.toUpperCase();
+
+  const peds = r.pedidoIds.map(function(id){ return ops.pedidos.find(function(p){ return p.id===id; }); }).filter(Boolean);
+
+  // Render entrega rows
+  document.getElementById('cierre-entregas').innerHTML =
+    '<div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--text3);margin-bottom:10px;">ENTREGAS Y COBROS</div>'+
+    peds.map(function(p){
+      const cobro = r.cobros[p.id]||{};
+      const entregado = cobro.entregado||false;
+      const metodo = cobro.metodo||'efectivo';
+      const pagado = cobro.pagado||false;
+
+      return '<div style="background:var(--surface2);border-radius:10px;margin-bottom:8px;overflow:hidden;" id="cierre-row-'+p.id+'">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;" onclick="toggleCierreRow(\''+p.id+'\')">'+
+          '<div>'+
+            '<div style="font-weight:600;font-size:15px;">'+p.clienteNombre+'</div>'+
+            '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);">'+(p.direccion||'')+'</div>'+
+          '</div>'+
+          '<div style="text-align:right;">'+
+            '<div style="font-family:var(--mono);font-weight:600;font-size:15px;">'+fmt(p.total)+'</div>'+
+            '<span class="estado '+(entregado?'est-entregado':'est-camino')+'">'+(entregado?'ENTREGADO':'EN CAMINO')+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<div id="cierre-det-'+p.id+'" style="display:none;padding:0 14px 14px;border-top:1px solid var(--border);">'+
+          '<div class="fg2" style="margin-top:12px;">'+
+            '<div class="ff"><label>ESTADO</label>'+
+              '<select class="fi" id="cet-'+p.id+'" onchange="updateCobro(\''+p.id+'\')">'+
+                '<option value="entregado"'+(entregado?' selected':'')+'>Entregado</option>'+
+                '<option value="no-entregado"'+(!entregado?' selected':'')+'>No entregado</option>'+
+              '</select>'+
+            '</div>'+
+            '<div class="ff"><label>FORMA DE PAGO</label>'+
+              '<select class="fi" id="cmt-'+p.id+'" onchange="updateCobro(\''+p.id+'\')" '+(entregado?'':'disabled')+'>'+
+                '<option value="efectivo"'+(metodo==='efectivo'?' selected':'')+'>Efectivo</option>'+
+                '<option value="transferencia"'+(metodo==='transferencia'?' selected':'')+'>Transferencia</option>'+
+                '<option value="cuenta"'+(metodo==='cuenta'?' selected':'')+'>A cuenta (deuda)</option>'+
+              '</select>'+
+            '</div>'+
+          '</div>'+
+          '<div class="ff"><label>MONTO COBRADO</label>'+
+            '<input class="fi" type="number" id="cmt-monto-'+p.id+'" value="'+(cobro.monto||p.total)+'" onchange="updateCobro(\''+p.id+'\')" inputmode="numeric">'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+
+  document.getElementById('cierre-resumen').style.display = 'none';
+  document.getElementById('modal-cierre').classList.remove('hidden');
+}
+
+function toggleCierreRow(pedId){
+  const det = document.getElementById('cierre-det-'+pedId);
+  det.style.display = det.style.display==='none' ? 'block' : 'none';
+}
+
+function updateCobro(pedId){
+  const r = ops.recorridos.find(function(x){ return x.id===recorridoCierreId; });
+  if(!r) return;
+  const p = ops.pedidos.find(function(x){ return x.id===pedId; });
+  if(!p) return;
+
+  const estado = document.getElementById('cet-'+pedId).value;
+  const metodo = document.getElementById('cmt-'+pedId).value;
+  const monto = parseFloat(document.getElementById('cmt-monto-'+pedId).value)||p.total;
+  const entregado = estado === 'entregado';
+
+  r.cobros[pedId] = {entregado, metodo, monto, pagado: entregado && metodo !== 'cuenta'};
+  document.getElementById('cmt-'+pedId).disabled = !entregado;
+
+  // Update badge
+  const row = document.getElementById('cierre-row-'+pedId);
+  if(row){
+    const badge = row.querySelector('.estado');
+    if(badge){
+      badge.className = 'estado '+(entregado?'est-entregado':'est-camino');
+      badge.textContent = entregado?'ENTREGADO':'EN CAMINO';
+    }
+  }
+
+  // Show/hide transferencia caja selector
+  var cajatWrap = document.getElementById('cajat-wrap-'+pedId);
+  if(cajatWrap){
+    if(entregado && metodo==='transferencia'){
+      cajatWrap.innerHTML = '';
+      var wdiv = document.createElement('div');
+      wdiv.className = 'ff'; wdiv.style.marginTop = '6px';
+      var lbl2 = document.createElement('label');
+      lbl2.textContent = 'CAJA DESTINO TRANSF.';
+      var sel2 = document.createElement('select');
+      sel2.className = 'fi'; sel2.id = 'cajat-' + pedId;
+      sel2.innerHTML = getCajasTransfOpts((r.cobros[pedId]&&r.cobros[pedId].cajaTransf)||'financiera');
+      (function(pid){ sel2.addEventListener('change', function(){ updateCobroTransf(this, pid); }); })(pedId);
+      wdiv.appendChild(lbl2); wdiv.appendChild(sel2); cajatWrap.appendChild(wdiv);
+    } else {
+      cajatWrap.innerHTML = '';
+    }
+  }
+
+  saveOps();
+  actualizarResumenCierre();
+}
+
+function actualizarResumenCierre(){
+  const r = ops.recorridos.find(function(x){ return x.id===recorridoCierreId; });
+  if(!r) return;
+  const peds = r.pedidoIds.map(function(id){ return ops.pedidos.find(function(p){ return p.id===id; }); }).filter(Boolean);
+
+  let totalEfectivo = 0, totalTransf = 0, totalDeuda = 0, noEntregados = 0;
+  peds.forEach(function(p){
+    const c = r.cobros[p.id]||{};
+    if(!c.entregado){ noEntregados++; return; }
+    if(c.metodo==='efectivo') totalEfectivo += c.monto||p.total;
+    else if(c.metodo==='transferencia') totalTransf += c.monto||p.total;
+    else if(c.metodo==='cuenta') totalDeuda += c.monto||p.total;
+  });
+
+  const resumen = document.getElementById('cierre-resumen');
+  resumen.style.display = 'block';
+  document.getElementById('cierre-efectivo-total').value = fmt(totalEfectivo);
+  document.getElementById('cierre-resumen-items').innerHTML =
+    '<div class="resumen-item"><span style="color:var(--text2);">Efectivo cobrado</span><span style="font-family:var(--mono);color:var(--green);">'+fmt(totalEfectivo)+'</span></div>'+
+    '<div class="resumen-item"><span style="color:var(--text2);">Transferencias</span><span style="font-family:var(--mono);color:var(--blue);">'+fmt(totalTransf)+'</span></div>'+
+    '<div class="resumen-item"><span style="color:var(--text2);">A cuenta (deuda)</span><span style="font-family:var(--mono);color:var(--amber);">'+fmt(totalDeuda)+'</span></div>'+
+    (noEntregados?'<div class="resumen-item"><span style="color:var(--text2);">No entregados</span><span style="font-family:var(--mono);color:var(--red);">'+noEntregados+'</span></div>':'')+
+    '<div class="resumen-item" style="border:none;"><span style="font-weight:600;">TOTAL</span><span style="font-family:var(--display);font-size:20px;">'+fmt(totalEfectivo+totalTransf+totalDeuda)+'</span></div>';
+}
+
+function cerrarRecorrido(){
+  const r = ops.recorridos.find(function(x){ return x.id===recorridoCierreId; });
+  if(!r) return;
+
+  const cajaEfectivo = document.getElementById('cierre-caja').value;
+  const peds = r.pedidoIds.map(function(id){ return ops.pedidos.find(function(p){ return p.id===id; }); }).filter(Boolean);
+
+  let totalEfectivo = 0, totalTransf = 0;
+
+  peds.forEach(function(p){
+    const c = r.cobros[p.id]||{};
+    if(!c.entregado){ p.estado = 'pendiente'; p.recorridoId = null; return; }
+
+    if(c.metodo === 'cuenta'){
+      // Generar deuda en el cliente
+      p.estado = 'cobrado';
+      p.metodoCobro = 'cuenta';
+      actualizarDeudaCliente(p.clienteId, p.clienteNombre, p.total, p.id);
+    } else {
+      p.estado = 'cobrado';
+      p.metodoCobro = c.metodo;
+      if(c.metodo === 'efectivo') totalEfectivo += c.monto||p.total;
+      else totalTransf += c.monto||p.total;
+    }
+
+    // Bajar stock PT
+    bajarStockPT(p.productos, r.dep||'tigre');
+  });
+
+  // Descontar gastos del chofer
+  var gastosTotales = (r.gastos||[]).reduce(function(s,g){ return s+g.monto; }, 0);
+  var aRendir = totalEfectivo - gastosTotales;
+
+  // Ingresar efectivo neto a caja
+  if(aRendir > 0){
+    registrarEnFinanzas(aRendir, cajaEfectivo, 'Recorrido '+r.chofer.toUpperCase()+' — Efectivo (gastos descontados)', r.fecha);
+  }
+  // Registrar gastos en finanzas
+  if(gastosTotales > 0){
+    (r.gastos||[]).forEach(function(g){
+      try{
+        var fin = JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+        if(!fin.movimientos) fin.movimientos = [];
+        fin.movimientos.unshift({id:'mg_'+Date.now(),fecha:r.fecha,concepto:'Gasto '+r.chofer.toUpperCase()+' — '+g.concepto,monto:g.monto,tipo:'salida',caja:cajaEfectivo,cat:'gasto-logistica'});
+        localStorage.setItem('fy_finanzas',JSON.stringify(fin));
+      }catch(e){}
+    });
+  }
+  if(totalTransf > 0){
+    registrarEnFinanzas(totalTransf, 'financiera', 'Recorrido '+r.chofer.toUpperCase()+' — Transferencias', r.fecha);
+  }
+
+  r.estado = 'cerrado';
+  r.cierreFecha = new Date().toISOString();
+  r.cajaDestino = cajaEfectivo;
+  r.totalEfectivo = totalEfectivo;
+  r.totalTransf = totalTransf;
+
+  saveOps();
+  cerrarModal('modal-cierre');
+  renderRecorridos();
+  updateBadges();
+  toast('Recorrido cerrado — '+fmt(totalEfectivo)+' efectivo ingresado a caja');
+}
+
+function bajarStockPT(productos, dep){
+  try{
+    const inv = JSON.parse(localStorage.getItem('fy_stock_v1')||'{}');
+    if(!inv.stock) inv.stock = {};
+    if(!inv.stock[dep]) inv.stock[dep] = {mp:{},pkg:{},pt:{}};
+    if(!inv.stock[dep].pt) inv.stock[dep].pt = {};
+    if(!inv.stock[dep].dist) inv.stock[dep].dist = {};
+    // Build PT catalog to know which products are distribuidos
+    var ptCat = null;
+    try{var cfgProd=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');ptCat=cfgProd.productos||[];}catch(ex){}
+    productos.forEach(function(pr){
+      var isDist = ptCat && ptCat.find(function(p){return p.sku===pr.sku&&p.linea==='distribuido';});
+      if(isDist){
+        var actualD = inv.stock[dep].dist[pr.sku]||0;
+        inv.stock[dep].dist[pr.sku] = Math.max(0, actualD - pr.cant);
+      } else {
+        var actual = inv.stock[dep].pt[pr.sku]||0;
+        inv.stock[dep].pt[pr.sku] = Math.max(0, actual - pr.cant);
+      }
+    });
+    localStorage.setItem('fy_stock_v1', JSON.stringify(inv));
+  }catch(e){}
+}
+
+function getCajasTransfOpts(selected){
+  var cfg = getCfg();
+  var cajas = (cfg.cajas&&cfg.cajas.pesos)||[{id:'financiera',nombre:'Financiera'},{id:'galicia-srl',nombre:'Galicia SRL'}];
+  return cajas.map(function(c){
+    return '<option value="'+c.id+'"'+(c.id===selected?' selected':'')+'>'+c.nombre+'</option>';
+  }).join('');
+}
+
+function updateCobroTransf(el, pedId){
+  var r = ops.recorridos.find(function(x){ return x.id===recorridoCierreId; });
+  if(!r) return;
+  if(!r.cobros[pedId]) r.cobros[pedId] = {};
+  r.cobros[pedId].cajaTransf = el.value;
+  saveOps();
+}
+
+function actualizarDeudaCliente(clienteId, clienteNombre, monto, pedidoId){
+  try{
+    const cl = JSON.parse(localStorage.getItem('fy_clientes')||'{}');
+    var found = false;
+    ['particulares','locales'].forEach(function(tipo){
+      if(!cl[tipo]) return;
+      const c = cl[tipo].find(function(x){ return x.id===clienteId; });
+      if(c){
+        c.deuda = (c.deuda||0) + monto;
+        if(!c.movimientos) c.movimientos = [];
+        c.movimientos.unshift({id:'dm_'+Date.now(), fecha:hoy(), tipo:'deuda', monto, pedidoId, concepto:'Pedido entregado'});
+        found = true;
+      }
+    });
+    if(!found){
+      // Cliente nuevo sin perfil — crear entrada básica
+      if(!cl.particulares) cl.particulares = [];
+      cl.particulares.unshift({id:clienteId, nombre:clienteNombre, deuda:monto, movimientos:[{id:'dm_'+Date.now(),fecha:hoy(),tipo:'deuda',monto,pedidoId}]});
+    }
+    localStorage.setItem('fy_clientes', JSON.stringify(cl));
+  }catch(e){}
+}
+
+function registrarEnFinanzas(monto, caja, concepto, fecha){
+  try{
+    const fin = JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    if(!fin.cajas) fin.cajas = {};
+    if(!fin.movimientos) fin.movimientos = [];
+    fin.cajas[caja] = (fin.cajas[caja]||0) + monto;
+    fin.movimientos.unshift({id:'mop_'+Date.now(), fecha, concepto, monto, tipo:'entrada', caja, cat:'venta'});
+    localStorage.setItem('fy_finanzas', JSON.stringify(fin));
+  }catch(e){}
+}
+
+// ============================================================
+// HISTORIAL
+// ============================================================
+// ============================================================
+// VISTA CHOFER
+// ============================================================
+var choferActivo = null;
+
+function renderChoferTab(){
+  var EXCLUIDOS = ['profe','el profe'];
+  var activos = ops.recorridos.filter(function(r){ return r.estado!=='cerrado'; });
+  var choferes = [];
+  activos.forEach(function(r){
+    if(!choferes.find(function(c){ return c.id===r.chofer; }) && EXCLUIDOS.indexOf(r.chofer.toLowerCase())<0){
+      choferes.push({id:r.chofer, nombre:(r.nombre||r.chofer).toUpperCase()});
+    }
+  });
+  try{
+    var cfgC = getCfg();
+    (cfgC.empleados||[]).filter(function(em){ return em.rol==='logistica'&&em.activo; }).forEach(function(em){
+      if(!choferes.find(function(c){ return c.id===em.id; }) && EXCLUIDOS.indexOf((em.nombre||'').toLowerCase())<0){
+        choferes.push({id:em.id, nombre:em.nombre.toUpperCase()});
+      }
+    });
+  }catch(ex){}
+  if(!choferes.length){
+    ['mauro','maxi','nacho'].forEach(function(id){ choferes.push({id:id,nombre:id.toUpperCase()}); });
+  }
+  var sel = document.getElementById('chofer-selector');
+  if(!sel) return;
+  sel.innerHTML = choferes.map(function(c){
+    var recActivo = activos.find(function(r){ return r.chofer===c.id; });
+    var dotColor = recActivo ? (recActivo.estado==='camino'?'var(--green)':recActivo.estado==='cargando'?'var(--amber)':'var(--text3)') : 'var(--border)';
+    return '<button class="chofer-btn'+(choferActivo===c.id?' active':'')+'" data-cid="'+c.id+'" onclick="selChoferBtn(this)">'+c.nombre+'<span class="rec-badge" style="background:'+dotColor+';"></span></button>';
+  }).join('');
+  if(choferActivo) renderVistaChofer(choferActivo);
+}
+
+function selChoferBtn(btn){ selChofer(btn.getAttribute('data-cid')); }
+function selChofer(id){
+  choferActivo = id;
+  renderChoferTab();
+}
+
+function renderVistaChofer(choferId){
+  const cont = document.getElementById('chofer-contenido');
+  if(!cont) return;
+
+  // Find active recorrido for this chofer
+  const r = ops.recorridos.find(function(x){ return x.chofer===choferId && x.estado!=='cerrado'; });
+
+  if(!r){
+    cont.innerHTML = '<div class="empty"><div class="empty-icon">🚐</div>'+
+      choferId.toUpperCase()+' no tiene recorrido activo hoy</div>';
+    return;
+  }
+
+  const orden = r.ordenEntrega||r.pedidoIds;
+  const peds = orden.map(function(pid){ return ops.pedidos.find(function(p){ return p.id===pid; }); }).filter(Boolean);
+  const entregados = peds.filter(function(p){ return p.estado==='entregado'||p.estado==='cobrado'; }).length;
+
+  // Header del recorrido
+  var html = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">'+
+      '<div>'+
+        '<div style="font-family:var(--display);font-size:28px;letter-spacing:1px;">'+(r.nombre||r.chofer.toUpperCase())+'</div>'+
+        '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);">'+r.fecha+' · '+r.dep.toUpperCase()+'</div>'+
+      '</div>'+
+      '<div style="text-align:right;">'+
+        '<div style="font-family:var(--display);font-size:22px;color:var(--green);">'+entregados+'/'+peds.length+'</div>'+
+        '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">ENTREGAS</div>'+
+      '</div>'+
+    '</div>';
+
+  // Estado y botones según estado del recorrido
+  if(r.estado==='armado'){
+    html += '<div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--text3);text-align:center;">⏳ Recorrido armado — esperando salida</div>';
+  } else if(r.estado==='cargando'){
+    // Init carga state if needed
+    if(!r.cargaCheck) r.cargaCheck = {};
+
+    // Reverse order for loading
+    var pedsRev = peds.slice().reverse();
+
+    // Count checked products globally
+    var totalProds = 0, checkedProds = 0;
+    pedsRev.forEach(function(p){
+      (p.productos||[]).forEach(function(pr){
+        totalProds++;
+        if(r.cargaCheck[p.id+'_'+pr.sku]) checkedProds++;
+      });
+    });
+
+    html += '<div style="margin-top:12px;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'+
+        '<div style="font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:2px;">CARGANDO CAMIONETA</div>'+
+        '<div style="font-family:var(--display);font-size:20px;color:'+(checkedProds===totalProds?'var(--green)':'var(--amber)')+';">'+checkedProds+'/'+totalProds+'</div>'+
+      '</div>';
+
+    // Progress bar
+    var pct = totalProds > 0 ? Math.round(checkedProds/totalProds*100) : 0;
+    html += '<div style="background:var(--surface3);border-radius:4px;height:6px;margin-bottom:14px;overflow:hidden;">'+
+      '<div style="height:100%;width:'+pct+'%;background:'+(pct===100?'var(--green)':'var(--amber)')+';border-radius:4px;transition:width 0.3s;"></div>'+
+    '</div>';
+
+    // Per client - reverse order
+    pedsRev.forEach(function(p, i){
+      var numCarga = i+1;
+      var numEntrega = peds.length - i;
+      var prods = p.productos||[];
+      var allChecked = prods.every(function(pr){ return r.cargaCheck[p.id+'_'+pr.sku]; });
+      var someChecked = prods.some(function(pr){ return r.cargaCheck[p.id+'_'+pr.sku]; });
+      var noneChecked = !someChecked;
+
+      html += '<div style="background:'+(allChecked?'rgba(46,204,113,0.08)':'var(--surface2)')+';border:2px solid '+(allChecked?'var(--green)':someChecked?'var(--amber)':'var(--border)')+';border-radius:10px;padding:12px;margin-bottom:10px;" id="carga-card-'+p.id+'">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'+
+          '<div>'+
+            '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);">'+numCarga+'° CARGA · entrega '+numEntrega+'°</div>'+
+            '<div style="font-weight:700;font-size:15px;">'+p.clienteNombre+'</div>'+
+          '</div>'+
+          '<div style="text-align:right;">'+
+            (allChecked?'<span style="font-family:var(--mono);font-size:11px;color:var(--green);">✓ LISTO</span>':'')+
+            (noneChecked&&numCarga>1?'<button class="btn btn-danger btn-sm" style="font-size:10px;" data-pid="'+p.id+'" data-rid="'+r.id+'" onclick="choferNoEntraBtn(this)">No entra</button>':'')+
+          '</div>'+
+        '</div>'+
+
+        // Productos con checkbox
+        prods.map(function(pr){
+          var key = p.id+'_'+pr.sku;
+          var checked = r.cargaCheck[key]||false;
+          return '<div style="display:flex;align-items:center;gap:12px;padding:10px;background:'+(checked?'rgba(46,204,113,0.1)':'var(--surface3)')+';border-radius:8px;margin-bottom:6px;cursor:pointer;" '+
+            'data-pid="'+p.id+'" data-sku="'+pr.sku+'" data-rid="'+r.id+'" onclick="choferToggleProd(this)">'+
+            '<div style="width:24px;height:24px;border-radius:6px;border:2px solid '+(checked?'var(--green)':'var(--border)')+';background:'+(checked?'var(--green)':'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+
+              (checked?'<span style="color:#000;font-weight:700;font-size:14px;">✓</span>':'')+
+            '</div>'+
+            '<div style="flex:1;">'+
+              '<span style="font-family:var(--mono);font-size:13px;font-weight:600;">'+pr.sku+'</span>'+
+              '<span style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:8px;">'+pr.nombre+'</span>'+
+            '</div>'+
+            '<span style="font-family:var(--display);font-size:20px;color:var(--accent2);">'+pr.cant+'</span>'+
+          '</div>';
+        }).join('')+
+
+      '</div>';
+    });
+
+    html += '<button class="btn btn-green btn-full" style="margin-top:8px;font-size:16px;" data-rid="'+r.id+'" onclick="choferListoParaSalirBtn(this)">&#x2713; CAMIONETA LISTA &mdash; SALIR</button>'+
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-align:center;margin-top:8px;">'+
+        (checkedProds<totalProds?'Faltan '+(totalProds-checkedProds)+' productos por tildar':'Todo cargado — listo para salir')+
+      '</div>';
+
+  } else if(r.estado==='camino'){
+    html += '<div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:10px;">🚐 EN REPARTO</div>';
+
+    // Entregas en orden
+    peds.forEach(function(p, i){
+      var entregado = p.estado==='entregado'||p.estado==='cobrado';
+      var cobro = r.cobros&&r.cobros[p.id]||{};
+      var esSiguiente = !entregado && peds.slice(0,i).every(function(prev){ return prev.estado==='entregado'||prev.estado==='cobrado'; });
+
+      html += '<div class="entrega-card '+(entregado?'listo':esSiguiente?'en-curso':'pendiente')+'" style="background:'+(entregado?'rgba(46,204,113,0.05)':esSiguiente?'var(--surface2)':'var(--surface)')+';padding:14px;">'+
+        '<div style="display:flex;gap:12px;align-items:flex-start;">'+
+          '<div class="entrega-num" style="color:'+(entregado?'var(--green)':esSiguiente?'var(--accent2)':'var(--text3)')+';">'+(i+1)+'</div>'+
+          '<div style="flex:1;">'+
+            '<div style="font-weight:700;font-size:16px;margin-bottom:4px;">'+p.clienteNombre+'</div>'+
+            '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:8px;">'+(p.horario||'')+'</div>'+
+
+            // Dirección con copiar
+            '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'+
+              '<span style="font-family:var(--mono);font-size:12px;">'+(p.direccion||'Sin dirección')+'</span>'+
+              '<button class="rec-copy-btn" data-dir="'+(p.direccion||'').replace(/"/g,'&quot;')+'" onclick="copiarDirBtn(this)">&#128203;</button>'+
+            '</div>'+
+
+            // Productos
+            '<div style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:10px;">'+
+              (p.productos||[]).map(function(pr){ return pr.cant+'x '+pr.sku; }).join(' · ')+
+              ' <span style="color:var(--accent2);font-weight:600;">'+fmt(p.total)+'</span>'+
+            '</div>'+
+
+            // Cobro / estado
+            (p.pagoPrevio && !entregado ?
+              // Pre-cobrado desde clientes — solo hay que entregar
+              '<div style="background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3);border-radius:8px;padding:10px 12px;margin-bottom:8px;">'+
+                '<div style="font-family:var(--mono);font-size:11px;color:var(--green);margin-bottom:6px;">✓ YA COBRADO DESDE OFICINA</div>'+
+                '<div style="font-family:var(--mono);font-size:12px;color:var(--text2);">'+(p.pagoPrevio.metodo==='efectivo'?'💵 Efectivo':'📱 Transf.')+' · '+fmt(p.pagoPrevio.monto)+'</div>'+
+                (p.pagoPrevio.referencia?'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">Ref: '+p.pagoPrevio.referencia+'</div>':'')+
+              '</div>'+
+              '<button class="btn btn-green btn-full" data-pid="'+p.id+'" onclick="choferSoloEntregar(this)">✓ MARCAR ENTREGADO</button>'
+            : entregado ?
+              '<div style="font-family:var(--mono);font-size:12px;color:'+(cobro.metodo==='efectivo'?'var(--green)':cobro.pagado?'var(--blue)':'var(--amber)')+';">'+
+                (cobro.metodo==='efectivo'?'✓ Cobrado '+fmt(cobro.monto||p.total):cobro.pagado?'✓ Transf. confirmada':'⏳ Transf. pendiente')+
+              '</div>'
+            : esSiguiente ?
+              '<div id="cobro-form-'+p.id+'">'+
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">'+
+                  '<button class="btn btn-sm" style="border:2px solid var(--border);background:var(--surface);color:var(--text);" data-pid="'+p.id+'" onclick="choferSetEfBtn(this)">&#x1F4B5; Efectivo</button>'+
+                  '<button class="btn btn-sm" style="border:2px solid var(--border);background:var(--surface);color:var(--text);" data-pid="'+p.id+'" onclick="choferSetTrBtn(this)">&#x1F4F1; Transferencia</button>'+
+                '</div>'+
+                '<div id="chofer-ef-'+p.id+'" style="display:none;margin-bottom:8px;">'+
+                  '<input class="fi" type="number" id="chofer-monto-'+p.id+'" value="'+p.total+'" style="margin-bottom:6px;" inputmode="numeric">'+
+                  '<button class="btn btn-green btn-full" data-pid="'+p.id+'" onclick="choferConfirmarEf(this)">✓ COBRADO EN EFECTIVO</button>'+
+                '</div>'+
+                '<div id="chofer-tr-'+p.id+'" style="display:none;margin-bottom:8px;">'+
+                  '<button class="btn btn-full" style="background:rgba(52,152,219,0.15);color:var(--blue);border:none;" data-pid="'+p.id+'" onclick="choferConfirmarTr(this)">✓ ENTREGADO — PAGA POR TRANSF.</button>'+
+                '</div>'+
+              '</div>'
+            : '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">Esperando entregas anteriores...</div>')+
+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    });
+  }
+
+  // Add finalizar button for camino state
+  if(r && r.estado==='camino'){
+    var resueltos2 = peds.filter(function(p){
+      var cobro = r.cobros&&r.cobros[p.id]||{};
+      return p.estado==='entregado'||p.estado==='cobrado'||cobro.noEntregado;
+    }).length;
+    var pendientesCount2 = peds.length - resueltos2;
+    var cajaTotalEf2 = 0;
+    peds.forEach(function(p){
+      var c2 = r.cobros&&r.cobros[p.id]||{};
+      if(c2.entregado&&c2.metodo==='efectivo') cajaTotalEf2 += c2.monto||0;
+    });
+    var gastos2 = (r.gastos||[]).reduce(function(s,g){ return s+g.monto; },0);
+    html += '<div style="margin-top:16px;padding:16px;background:var(--surface2);border-radius:12px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'+
+        '<div>'+
+          '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">EFECTIVO A ENTREGAR</div>'+
+          '<div style="font-family:var(--display);font-size:36px;color:var(--accent2);">'+(cajaTotalEf2-gastos2>0?'$'+Math.round(cajaTotalEf2-gastos2).toLocaleString('es-AR'):'$0')+'</div>'+
+        '</div>'+
+        '<div style="text-align:right;font-family:var(--mono);font-size:11px;color:'+(pendientesCount2?'var(--amber)':'var(--green)')+';">'+resueltos2+'/'+peds.length+' resueltos</div>'+
+      '</div>'+
+      '<button class="btn btn-green btn-full" style="font-size:15px;" data-rid="'+r.id+'" onclick="choferVerResumenFinalBtn(this)">&#x1F4CB; VER RESUMEN Y FINALIZAR</button>'+
+    '</div>';
+  }
+
+  html += '</div>'; // cierra header card
+  cont.innerHTML = html;
+}
+
+function choferToggleProd(el){
+  var pid = el.getAttribute('data-pid');
+  var sku = el.getAttribute('data-sku');
+  var rid = el.getAttribute('data-rid');
+  var r = ops.recorridos.find(function(x){ return x.id===rid; });
+  if(!r) return;
+  if(!r.cargaCheck) r.cargaCheck = {};
+  var key = pid+'_'+sku;
+  r.cargaCheck[key] = !r.cargaCheck[key];
+  saveOps();
+  renderVistaChofer(choferActivo);
+}
+
+function choferNoEntraBtn(btn){
+  var pid = btn.getAttribute('data-pid');
+  var rid = btn.getAttribute('data-rid');
+  choferNoEntra(pid, rid);
+}
+
+function choferNoEntra(pid, rid){
+  if(!confirm('¿Este cliente no entra? El pedido vuelve a PENDIENTES.')) return;
+  var r = ops.recorridos.find(function(x){ return x.id===rid; });
+  var p = ops.pedidos.find(function(x){ return x.id===pid; });
+  if(!r||!p) return;
+  // Remove from recorrido
+  r.pedidoIds = r.pedidoIds.filter(function(id){ return id!==pid; });
+  if(r.ordenEntrega) r.ordenEntrega = r.ordenEntrega.filter(function(id){ return id!==pid; });
+  // Clear check state for this pedido
+  if(r.cargaCheck){
+    Object.keys(r.cargaCheck).forEach(function(k){ if(k.indexOf(pid+'_')===0) delete r.cargaCheck[k]; });
+  }
+  // Return pedido to pending
+  p.estado = 'pendiente';
+  p.recorridoId = null;
+  saveOps();
+  renderVistaChofer(choferActivo);
+  toast(p.clienteNombre+' volvió a pedidos pendientes');
+}
+
+function choferListoParaSalir(recId){
+  comenzarReparto(recId);
+  renderChoferTab();
+}
+
+function choferListoParaSalirBtn(btn){ choferListoParaSalir(btn.getAttribute('data-rid')); }
+
+function salirRecBtn(btn){ salirRecorrido(btn.getAttribute('data-rid')); }
+function eliminarRecBtn(btn){ eliminarRecorrido(btn.getAttribute('data-rid')); }
+function irVistaChoferBtn(btn){
+  var cid = btn.getAttribute('data-cid');
+  choferActivo = cid;
+  setTab('chofer', document.querySelectorAll('.tab')[2]);
+}
+function abrirCierreAdminBtn(btn){
+  abrirCierreAdmin(btn.getAttribute('data-rid'));
+}
+
+function choferVerResumenFinalBtn(btn){
+  var rid = btn.getAttribute('data-rid');
+  var r = ops.recorridos.find(function(x){ return x.id===rid; });
+  if(!r) return;
+
+  var peds = (r.ordenEntrega||r.pedidoIds).map(function(id){
+    return ops.pedidos.find(function(p){ return p.id===id; });
+  }).filter(Boolean);
+
+  var cobrados = [], deudores = [], salteados = [];
+  var totalEfectivo = 0;
+  var gastos = (r.gastos||[]).reduce(function(s,g){ return s+g.monto; }, 0);
+
+  peds.forEach(function(p){
+    var c = r.cobros&&r.cobros[p.id]||{};
+    if(c.noEntregado){ salteados.push(p.clienteNombre); return; }
+    if(!c.entregado) { deudores.push({nombre:p.clienteNombre, monto:p.total}); return; }
+    if(c.metodo==='efectivo'){
+      totalEfectivo += c.monto||p.total;
+      cobrados.push({nombre:p.clienteNombre, monto:c.monto||p.total, metodo:'efectivo', parcial:(c.monto||p.total)<p.total});
+      if((c.monto||p.total) < p.total) deudores.push({nombre:p.clienteNombre, monto:p.total-(c.monto||p.total)});
+    } else if(c.metodo==='transferencia'){
+      cobrados.push({nombre:p.clienteNombre, monto:p.total, metodo:'transferencia', pagado:c.pagado});
+      if(!c.pagado) deudores.push({nombre:p.clienteNombre, monto:p.total});
+    }
+  });
+
+  var aRendir = totalEfectivo - gastos;
+
+  // Build summary HTML
+  var html = '<div style="font-family:var(--display);font-size:24px;letter-spacing:1px;margin-bottom:16px;">RESUMEN FINAL</div>';
+
+  // Efectivo a rendir — grande
+  html += '<div style="background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:14px;text-align:center;">'+
+    '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:4px;">EFECTIVO A ENTREGAR EN DEPÓSITO</div>'+
+    '<div style="font-family:var(--display);font-size:48px;color:var(--accent2);">'+fmt(aRendir)+'</div>'+
+    (gastos>0?'<div style="font-family:var(--mono);font-size:11px;color:var(--text3);">'+fmt(totalEfectivo)+' cobrado − '+fmt(gastos)+' gastos</div>':'')+
+  '</div>';
+
+  // Pagaron
+  if(cobrados.length){
+    html += '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:6px;">PAGARON ('+cobrados.length+')</div>';
+    html += '<div style="background:var(--surface2);border-radius:10px;margin-bottom:12px;overflow:hidden;">';
+    cobrados.forEach(function(c){
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);">'+
+        '<span style="font-size:13px;font-weight:500;">'+c.nombre+'</span>'+
+        '<span style="font-family:var(--mono);color:'+(c.metodo==='efectivo'?'var(--green)':'var(--blue)')+';">'+(c.metodo==='efectivo'?'&#x1F4B5;':'&#x1F4F1;')+' '+fmt(c.monto)+'</span>'+
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Quedan debiendo
+  if(deudores.length){
+    html += '<div style="font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:2px;margin-bottom:6px;">QUEDAN DEBIENDO ('+deudores.length+')</div>';
+    html += '<div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:10px;margin-bottom:12px;overflow:hidden;">';
+    deudores.forEach(function(d){
+      html += '<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(245,166,35,0.1);">'+
+        '<span style="font-size:13px;font-weight:500;">'+d.nombre+'</span>'+
+        '<span style="font-family:var(--mono);color:var(--amber);">'+fmt(d.monto)+'</span>'+
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Salteados
+  if(salteados.length){
+    html += '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:6px;">SALTEADOS — VUELVEN A PENDIENTES</div>';
+    html += '<div style="background:var(--surface2);border-radius:10px;margin-bottom:12px;padding:10px 14px;">'+
+      salteados.map(function(n){ return '<div style="font-size:13px;color:var(--text2);padding:3px 0;">'+n+'</div>'; }).join('')+
+    '</div>';
+  }
+
+  html += '<div style="display:flex;gap:8px;margin-top:8px;">'+
+    '<button class="btn btn-green btn-full" style="font-size:15px;" data-rid="'+rid+'" onclick="choferFinalizarBtn(this)">&#x2713; CONFIRMAR Y FINALIZAR</button>'+
+    '<button class="btn btn-ghost" onclick="cerrarModalResumen()">Volver</button>'+
+  '</div>';
+
+  // Show in a modal
+  var overlay = document.getElementById('modal-resumen-chofer');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'modal-resumen-chofer';
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = '<div class="modal" style="max-width:500px;" id="modal-resumen-chofer-inner"></div>';
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.classList.add('hidden'); });
+    document.body.appendChild(overlay);
+  }
+  document.getElementById('modal-resumen-chofer-inner').innerHTML = html;
+  overlay.classList.remove('hidden');
+}
+
+function cerrarModalResumen(){
+  var el = document.getElementById('modal-resumen-chofer');
+  if(el) el.classList.add('hidden');
+}
+function choferFinalizarBtn(btn){
+  var rid = btn.getAttribute('data-rid');
+  var r = ops.recorridos.find(function(x){ return x.id===rid; });
+  if(!r) return;
+  // Mark no-entregados as pending again
+  (r.cobros?Object.keys(r.cobros):[]).forEach(function(pid){
+    if(r.cobros[pid].noEntregado){
+      var p = ops.pedidos.find(function(x){ return x.id===pid; });
+      if(p){ p.estado='pendiente'; p.recorridoId=null; }
+      r.pedidoIds = r.pedidoIds.filter(function(id){ return id!==pid; });
+      if(r.ordenEntrega) r.ordenEntrega = r.ordenEntrega.filter(function(id){ return id!==pid; });
+    }
+  });
+  r.estado = 'finalizado'; // Admin still needs to close
+  r.finalizadoEn = new Date().toISOString();
+  saveOps();
+  renderChoferTab();
+  renderRecorridos();
+  toast('Recorrido finalizado — pendiente de cierre en oficina');
+}
+
+function choferNoEntregadoBtn(btn){
+  var pid = btn.getAttribute('data-pid');
+  var rid = btn.getAttribute('data-rid');
+  var r = ops.recorridos.find(function(x){ return x.id===rid; });
+  var p = ops.pedidos.find(function(x){ return x.id===pid; });
+  if(!r||!p) return;
+  if(!r.cobros) r.cobros = {};
+  r.cobros[pid] = {entregado:false, noEntregado:true, monto:0};
+  saveOps();
+  renderVistaChofer(choferActivo);
+  toast('Marcado como no entregado — quedará pendiente al cerrar');
+}
+
+function choferDesmarcarNoEntregadoBtn(btn){
+  var pid = btn.getAttribute('data-pid');
+  var rid = btn.getAttribute('data-rid');
+  var r = ops.recorridos.find(function(x){ return x.id===rid; });
+  if(!r) return;
+  if(r.cobros&&r.cobros[pid]) delete r.cobros[pid];
+  saveOps();
+  renderVistaChofer(choferActivo);
+}
+
+function choferAgregarGastoBtn(btn){
+  var rid = btn.getAttribute('data-rid');
+  var form = document.getElementById('gasto-form-'+rid);
+  if(form) form.style.display = form.style.display==='none' ? 'block' : 'none';
+}
+
+function choferConfirmarGastoBtn(btn){
+  var rid = btn.getAttribute('data-rid');
+  var r = ops.recorridos.find(function(x){ return x.id===rid; });
+  if(!r) return;
+  var concepto = document.getElementById('gasto-concepto-'+rid);
+  var montoEl = document.getElementById('gasto-monto-'+rid);
+  var monto = parseFloat(montoEl?montoEl.value:0)||0;
+  if(!monto){ toast('Ingresá el monto', true); return; }
+  if(!r.gastos) r.gastos = [];
+  r.gastos.push({id:uid(), fecha:hoy(), concepto:(concepto?concepto.value.trim():'Gasto')||'Gasto', monto});
+  saveOps();
+  renderVistaChofer(choferActivo);
+  toast('Gasto cargado: '+fmt(monto));
+}
+
+function choferCerrarGastoBtn(btn){
+  var rid = btn.getAttribute('data-rid');
+  var form = document.getElementById('gasto-form-'+rid);
+  if(form) form.style.display = 'none';
+}
+function choferSoloEntregar(btn){
+  var pid = btn.getAttribute('data-pid');
+  var p = ops.pedidos.find(function(x){ return x.id===pid; });
+  var r = ops.recorridos.find(function(x){ return x.estado==='camino' && x.pedidoIds.indexOf(pid)>=0; });
+  if(!p||!r) return;
+  p.estado = 'cobrado';
+  if(!r.cobros) r.cobros = {};
+  if(p.pagoPrevio){
+    r.cobros[pid] = {entregado:true, metodo:p.pagoPrevio.metodo, monto:p.pagoPrevio.monto, pagado:true, cobradoDesdeClientes:true};
+  }
+  saveOps();
+  renderVistaChofer(choferActivo);
+  renderRecorridos();
+  toast('✓ Entregado — ya estaba cobrado');
+}
+
+function choferSetEfBtn(btn){ choferSetEf(btn.getAttribute('data-pid')); }
+function choferSetTrBtn(btn){ choferSetTr(btn.getAttribute('data-pid')); }
+function choferSetEf(pid){
+  document.getElementById('chofer-ef-'+pid).style.display='block';
+  document.getElementById('chofer-tr-'+pid).style.display='none';
+}
+function choferSetTr(pid){
+  document.getElementById('chofer-tr-'+pid).style.display='block';
+  document.getElementById('chofer-ef-'+pid).style.display='none';
+}
+
+function choferConfirmarEf(btn){
+  var pid = btn.getAttribute('data-pid');
+  var p = ops.pedidos.find(function(x){ return x.id===pid; });
+  var r = ops.recorridos.find(function(x){ return x.id===repartoRecId||x.estado==='camino'&&x.pedidoIds.indexOf(pid)>=0; });
+  if(!p||!r) return;
+  var monto = parseFloat(document.getElementById('chofer-monto-'+pid).value)||p.total;
+  p.estado = 'entregado';
+  if(!r.cobros) r.cobros = {};
+  r.cobros[pid] = {entregado:true,metodo:'efectivo',monto,pagado:true,parcial:monto<p.total};
+  if(monto < p.total) actualizarDeudaCliente(p.clienteId,p.clienteNombre,p.total-monto,pid);
+  saveOps();
+  renderChoferTab();
+  toast('✓ Cobrado '+fmt(monto));
+}
+
+function choferConfirmarTr(btn){
+  var pid = btn.getAttribute('data-pid');
+  var p = ops.pedidos.find(function(x){ return x.id===pid; });
+  var r = ops.recorridos.find(function(x){ return x.estado==='camino'&&x.pedidoIds.indexOf(pid)>=0; });
+  if(!p||!r) return;
+  p.estado = 'entregado';
+  if(!r.cobros) r.cobros = {};
+  r.cobros[pid] = {entregado:true,metodo:'transferencia',monto:p.total,pagado:false,cajaTransf:'financiera'};
+  actualizarDeudaCliente(p.clienteId,p.clienteNombre,p.total,pid);
+  saveOps();
+  renderChoferTab();
+  toast('✓ Entregado — transf. pendiente');
+}
+
+function renderHistorial(){
+  const cerrados = ops.recorridos.filter(function(r){ return r.estado==='cerrado'; }).slice(0,20);
+  const lista = document.getElementById('lista-historial');
+
+  if(!cerrados.length){
+    lista.innerHTML = '<div class="empty"><div class="empty-icon">📚</div>Sin recorridos cerrados aún</div>';
+    return;
+  }
+
+  lista.innerHTML = cerrados.map(function(r){
+    const peds = r.pedidoIds.map(function(id){ return ops.pedidos.find(function(p){ return p.id===id; }); }).filter(Boolean);
+    const cobrados = peds.filter(function(p){ return p.estado==='cobrado'; }).length;
+    return '<div class="card" style="margin-bottom:10px;">'+
+      '<div class="card-header">'+
+        '<div>'+
+          '<div style="font-weight:600;">'+r.chofer.toUpperCase()+' · '+r.fecha+'</div>'+
+          '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);">'+cobrados+'/'+peds.length+' entregados</div>'+
+        '</div>'+
+        '<div style="text-align:right;">'+
+          '<div style="font-family:var(--mono);color:var(--green);">'+fmt(r.totalEfectivo||0)+' efectivo</div>'+
+          '<div style="font-family:var(--mono);font-size:11px;color:var(--blue);">'+fmt(r.totalTransf||0)+' transf.</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+function cerrarModal(id){
+  document.getElementById(id).classList.add('hidden');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(function(overlay){
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay) overlay.classList.add('hidden');
+  });
+});
+
+// ============================================================
+// BADGES
+// ============================================================
+function updateBadges(){
+  const pendientes = ops.pedidos.filter(function(p){ return p.estado==='pendiente'; });
+  const activos = ops.recorridos.filter(function(r){ return r.estado!=='cerrado'; });
+  document.getElementById('bdg-pendientes').textContent = pendientes.length;
+  const bRec = document.getElementById('bdg-recorridos');
+  bRec.style.display = activos.length ? 'inline-block' : 'none';
+  bRec.textContent = activos.length;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadOps();
+// Auto-inicializar CONFIG si no existe todavía
+try{
+  if(!localStorage.getItem('fy_config_v1')){
+    // Cargar la página de config para inicializar — o usar fallbacks
+    console.log('CONFIG no inicializado — usando fallbacks');
+  }
+}catch(e){}
+renderPedidos();
+updateBadges();
+</script>
+</body>
+</html>

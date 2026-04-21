@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Fuegos Ya — Clientes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#252525;
+  --border:#2a2a2a;--border2:#383838;
+  --text:#f0f0f0;--text2:#aaa;--text3:#666;
+  --accent:#e8470a;--accent2:#f5a623;
+  --green:#2ecc71;--red:#e74c3c;--blue:#3498db;--purple:#9b59b6;--amber:#f5a623;
+  --display:'Bebas Neue',sans-serif;--mono:'DM Mono',monospace;--body:'DM Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+
+/* NAV */
+.topnav{display:flex;align-items:center;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border);height:48px;position:sticky;top:0;z-index:200;overflow-x:auto;gap:0;}
+.nav-brand{font-family:var(--display);font-size:20px;letter-spacing:2px;color:var(--accent);margin-right:20px;white-space:nowrap;}
+.nav-link{padding:0 12px;height:48px;display:flex;align-items:center;font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--text3);text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;}
+.nav-link.active{color:var(--text);border-bottom-color:var(--accent);}
+
+/* TOOLBAR */
+.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:48px;z-index:100;}
+.search-box{flex:1;min-width:180px;max-width:320px;position:relative;}
+.search-box input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px 8px 34px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;}
+.search-box input:focus{border-color:var(--accent2);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--mono);font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.chip.active{background:var(--accent);border-color:var(--accent);color:white;}
+.chip.amber{border-color:rgba(245,166,35,0.4);color:var(--amber);}
+.chip.amber.active{background:var(--amber);color:#000;}
+.chip.blue{border-color:rgba(52,152,219,0.4);color:var(--blue);}
+.chip.blue.active{background:var(--blue);color:white;}
+.chip.green{border-color:rgba(46,204,113,0.4);color:var(--green);}
+.chip.green.active{background:var(--green);color:#000;}
+.sort-sel{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text2);font-family:var(--mono);font-size:10px;outline:none;cursor:pointer;}
+
+/* MAIN LAYOUT */
+.layout{display:flex;height:calc(100vh - 96px);}
+.lista-panel{width:320px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--surface);}
+.detalle-panel{flex:1;overflow-y:auto;}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
+.stat-mini{background:var(--surface);padding:8px 12px;text-align:center;}
+.stat-mini-val{font-family:var(--display);font-size:18px;color:var(--accent2);}
+.stat-mini-lbl{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:1px;}
+
+/* ZONA CHIPS in sidebar */
+.zona-bar{display:flex;gap:4px;padding:8px 10px;overflow-x:auto;border-bottom:1px solid var(--border);}
+.zona-chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--mono);font-size:9px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.zona-chip.active{color:white;}
+
+/* CLIENTE CARD in list */
+.cl-card{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
+.cl-card:hover{background:var(--surface2);}
+.cl-card.active{background:var(--surface2);border-left:3px solid var(--accent2);}
+.cl-nombre{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cl-meta{display:flex;gap:6px;align-items:center;margin-top:3px;flex-wrap:wrap;}
+.cl-zona{font-family:var(--mono);font-size:9px;font-weight:600;}
+.cl-tipo{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.cl-deuda-badge{font-family:var(--mono);font-size:9px;color:var(--amber);font-weight:600;}
+.cl-inactivo{font-family:var(--mono);font-size:9px;color:var(--red);}
+
+/* DETALLE */
+.detalle-wrap{padding:20px;max-width:900px;margin:0 auto;}
+.det-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+.det-nombre{font-family:var(--display);font-size:36px;letter-spacing:1px;line-height:1;}
+.det-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:10px;font-weight:600;}
+.b-green{background:rgba(46,204,113,0.15);color:#2ecc71;}
+.b-amber{background:rgba(245,166,35,0.15);color:#f5a623;}
+.b-blue{background:rgba(52,152,219,0.15);color:#3498db;}
+.b-red{background:rgba(231,76,60,0.15);color:#e74c3c;}
+.b-gray{background:rgba(102,102,102,0.2);color:#aaa;}
+.b-purple{background:rgba(155,89,182,0.15);color:#9b59b6;}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.kpi-val{font-family:var(--display);font-size:22px;letter-spacing:0.5px;margin-bottom:2px;}
+.kpi-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;}
+.kpi-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* INFO SECTIONS */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+.section-title{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--text3);}
+.info-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-lbl{font-family:var(--mono);font-size:10px;color:var(--text3);width:140px;flex-shrink:0;}
+.info-val{font-size:14px;font-weight:500;flex:1;}
+
+/* HISTORIAL */
+.hist-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;}
+.hist-row:last-child{border-bottom:none;}
+
+/* PREDICCION */
+.pred-card{background:var(--surface2);border-radius:10px;padding:16px;margin-bottom:12px;border:1px solid var(--border);}
+
+/* FORMS */
+.fi{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:var(--text);font-family:var(--body);font-size:14px;outline:none;}
+.fi:focus{border-color:var(--accent2);}
+.ff{margin-bottom:10px;}
+.ff label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--text3);margin-bottom:5px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* BTN */
+.btn{padding:9px 16px;border-radius:8px;border:none;font-family:var(--body);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+.btn-primary{background:var(--accent);color:white;}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.btn-green{background:var(--green);color:#000;}
+.btn-blue{background:var(--blue);color:white;}
+.btn-danger{background:rgba(231,76,60,0.1);color:var(--red);border:1px solid rgba(231,76,60,0.2);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn-icon{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 8px;font-size:14px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--surface);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-family:var(--display);font-size:24px;letter-spacing:1px;margin-bottom:16px;}
+
+/* PERS GRID */
+.pers-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.pers-check{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:7px;cursor:pointer;}
+.pers-check input{width:16px;height:16px;accent-color:var(--accent);}
+
+/* FILTER RADIO */
+.f-radio{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;color:var(--text2);padding:3px 0;}
+.f-radio input{accent-color:var(--accent);width:14px;height:14px;}
+.f-radio:has(input:checked){color:var(--text);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-family:var(--mono);font-size:12px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;max-width:300px;}
+.toast.show{opacity:1;}
+
+/* MOBILE */
+@media(max-width:700px){
+  .layout{flex-direction:column;height:auto;}
+  .lista-panel{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);max-height:50vh;}
+  .detalle-panel{height:auto;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .stats-bar{grid-template-columns:repeat(2,1fr);}
+  .det-nombre{font-size:26px;}
+}
+@media(max-width:400px){
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+}
+
+/* EMPTY */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:300px;color:var(--text3);font-family:var(--mono);font-size:12px;gap:12px;text-align:center;padding:20px;}
+.empty-icon{font-size:48px;}
+</style>
+</head>
+<body>
+<div style="display:flex;align-items:center;padding:0 16px;background:#161616;border-bottom:1px solid #2a2a2a;height:48px;position:sticky;top:0;z-index:200;overflow-x:auto;gap:0;flex-wrap:nowrap;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#e8470a;margin-right:20px;flex-shrink:0;">FUEGOS YA</div><a href="fuegos-ya-operaciones.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">OPERACIONES</a><a href="#" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#f0f0f0;text-decoration:none;border-bottom:2px solid #e8470a;white-space:nowrap;">CLIENTES</a><a href="fuegos-ya-finanzas.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">FINANZAS</a><a href="fuegos-ya-inventario.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">INVENTARIO</a><a href="fuegos-ya-rrhh.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">RRHH</a><a href="fuegos-ya-dashboard.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">DASHBOARD</a><a href="fuegos-ya-config.html" style="padding:0 12px;height:48px;display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:#555;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;">CONFIG</a></div>
+<div class="toolbar" style="flex-direction:column;align-items:stretch;gap:6px;padding:8px 16px;">
+  <!-- Row 1: search + actions -->
+  <div style="display:flex;gap:8px;align-items:center;">
+    <div class="search-box" style="flex:1;">
+      <span class="search-icon">🔍</span>
+      <input id="search-input" placeholder="Buscar cliente..." oninput="filtrar()" autocomplete="off">
+    </div>
+    <button class="btn btn-ghost btn-sm" id="btn-filtros" onclick="toggleFiltros()" style="white-space:nowrap;position:relative;">
+      ⚙ Filtros <span id="filtros-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--accent);color:white;border-radius:10px;padding:1px 5px;font-size:9px;font-family:var(--mono);">0</span>
+    </button>
+    <button class="btn btn-ghost btn-sm" onclick="abrirFacturas()" style="white-space:nowrap;color:var(--blue);">📄 Facturas</button>
+    <select class="sort-sel" onchange="setOrden(this.value)" style="max-width:120px;">
+      <option value="nombre">A → Z</option>
+      <option value="deuda">Mayor deuda</option>
+      <option value="ultima">Última compra</option>
+      <option value="sin-zona">Sin zona</option>
+      <option value="facturacion">Más facturado</option>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="abrirModalCliente(null)" style="white-space:nowrap;">+ NUEVO</button>
+    <button class="btn btn-ghost btn-sm" onclick="cargarClientePrueba()" style="white-space:nowrap;color:var(--text3);font-size:10px;">⚡ prueba</button>
+  </div>
+  <!-- Row 2: active filter chips (summary) -->
+  <div id="filtros-activos" style="display:none;flex-wrap:wrap;gap:4px;"></div>
+  <!-- Filtros panel (collapsible) -->
+  <div id="filtros-panel" style="display:none;background:var(--surface2);border-radius:8px;padding:10px 12px;border:1px solid var(--border);">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
+      <!-- Tipo -->
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:6px;">TIPO</div>
+        <div style="display:flex;flex-direction:column;gap:4px;" id="f-tipo-group">
+          <label class="f-radio active"><input type="radio" name="f-tipo" value="todos" checked onchange="applyFiltros()"> Todos</label>
+          <label class="f-radio"><input type="radio" name="f-tipo" value="mayorista" onchange="applyFiltros()"> Mayorista</label>
+          <label class="f-radio"><input type="radio" name="f-tipo" value="particular" onchange="applyFiltros()"> Particular</label>
+        </div>
+      </div>
+      <!-- Deuda -->
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:6px;">DEUDA</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label class="f-radio active"><input type="radio" name="f-deuda" value="todos" checked onchange="applyFiltros()"> Todos</label>
+          <label class="f-radio"><input type="radio" name="f-deuda" value="al-dia" onchange="applyFiltros()"> Al día</label>
+          <label class="f-radio"><input type="radio" name="f-deuda" value="deben" onchange="applyFiltros()"> Deben</label>
+        </div>
+      </div>
+      <!-- IVA -->
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:6px;">FACTURACIÓN</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label class="f-radio active"><input type="radio" name="f-iva" value="todos" checked onchange="applyFiltros()"> Todos</label>
+          <label class="f-radio"><input type="radio" name="f-iva" value="con-iva" onchange="applyFiltros()"> Con factura</label>
+          <label class="f-radio"><input type="radio" name="f-iva" value="sin-iva" onchange="applyFiltros()"> Sin factura</label>
+        </div>
+      </div>
+      <!-- Stock -->
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:6px;">STOCK</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label class="f-radio active"><input type="radio" name="f-stock" value="todos" checked onchange="applyFiltros()"> Todos</label>
+          <label class="f-radio"><input type="radio" name="f-stock" value="con-stock" onchange="applyFiltros()"> Con mercadería</label>
+          <label class="f-radio"><input type="radio" name="f-stock" value="reponer-pronto" onchange="applyFiltros()"> Reponer pronto</label>
+          <label class="f-radio"><input type="radio" name="f-stock" value="urgente" onchange="applyFiltros()"> Urgente reponer</label>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="btn btn-primary btn-sm" onclick="toggleFiltros()">✓ APLICAR Y CERRAR</button>
+      <button class="btn btn-ghost btn-sm" onclick="resetFiltros()">✕ Limpiar todo</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="stats-bar">
+  <div class="stat-mini"><div class="stat-mini-val" id="st-total">—</div><div class="stat-mini-lbl">CLIENTES</div></div>
+  <div class="stat-mini"><div class="stat-mini-val" id="st-deudores" style="color:var(--amber);">—</div><div class="stat-mini-lbl">CON DEUDA</div></div>
+  <div class="stat-mini"><div class="stat-mini-val" id="st-deuda-total" style="color:var(--red);">—</div><div class="stat-mini-lbl">DEUDA TOTAL</div></div>
+  <div class="stat-mini"><div class="stat-mini-val" id="st-sin-zona" style="color:var(--text3);">—</div><div class="stat-mini-lbl">SIN ZONA</div></div>
+</div>
+
+<div class="layout">
+
+  <!-- LISTA PANEL -->
+  <div class="lista-panel">
+    <!-- Zona chips -->
+    <div class="zona-bar" id="zona-bar"></div>
+    <!-- Lista -->
+    <div id="lista-clientes"></div>
+  </div>
+
+  <!-- DETALLE PANEL -->
+  <div class="detalle-panel" id="detalle-panel">
+    <div class="empty-state">
+      <div class="empty-icon">👥</div>
+      <div>Seleccioná un cliente para ver su perfil</div>
+      <button class="btn btn-primary" onclick="abrirModalCliente(null)">+ NUEVO CLIENTE</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL CLIENTE -->
+<div class="modal-overlay hidden" id="modal-cliente">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-cl-title">NUEVO CLIENTE</div>
+    <div class="fg2">
+      <div class="ff"><label>NOMBRE / RAZÓN SOCIAL</label><input class="fi" id="cl-nombre" placeholder="Nombre..."></div>
+      <div class="ff"><label>TIPO</label>
+        <select class="fi" id="cl-tipo" onchange="toggleCamposMayorista()">
+          <option value="particular">Particular</option>
+          <option value="mayorista">Mayorista / Local</option>
+        </select>
+      </div>
+    </div>
+    <div id="cl-subtipo-wrap" style="display:none;" class="ff">
+      <label>TIPO DE LOCAL</label>
+      <select class="fi" id="cl-subtipo">
+        <option value="carniceria">Carnicería</option>
+        <option value="almacen">Almacén / Dietética</option>
+        <option value="parrilla">Parrilla / Restaurante</option>
+        <option value="supermercado">Supermercado</option>
+        <option value="otro">Otro</option>
+      </select>
+    </div>
+    <div class="fg2">
+      <div class="ff"><label>ZONA</label>
+        <select class="fi" id="cl-zona">
+          <option value="">— Zona —</option>
+          <option value="Tigre">Tigre</option>
+          <option value="San Isidro">San Isidro</option>
+          <option value="Pilar">Pilar</option>
+          <option value="Escobar">Escobar</option>
+          <option value="CABA">CABA</option>
+          <option value="Zona Oeste">Zona Oeste</option>
+          <option value="Zona Sur">Zona Sur</option>
+        </select>
+      </div>
+      <div class="ff"><label>TELÉFONO / WHATSAPP</label><input class="fi" id="cl-tel" placeholder="+54 9..." type="tel" inputmode="tel"></div>
+    </div>
+    <div class="fg2">
+      <div class="ff"><label>HORARIO DE ENTREGA</label><input class="fi" id="cl-horario" placeholder="10:00-13:00"></div>
+      <div class="ff"><label>CONDICIÓN IVA</label>
+        <select class="fi" id="cl-iva">
+          <option value="no">Sin factura</option>
+          <option value="si">Con factura (IVA)</option>
+          <option value="exento">Exento</option>
+        </select>
+      </div>
+    </div>
+    <div class="ff"><label>DIRECCIÓN</label><input class="fi" id="cl-dir" placeholder="Calle, número, localidad..."></div>
+    <div class="ff"><label>NOTAS / REFERENCIAS</label><input class="fi" id="cl-notas" placeholder="Timbre, piso, instrucciones..."></div>
+    <div id="campos-mayorista" style="display:none;">
+      <div class="fg2">
+        <div class="ff"><label>RAZÓN SOCIAL</label><input class="fi" id="cl-razon" placeholder="Razón social..."></div>
+        <div class="ff"><label>CUIT</label><input class="fi" id="cl-cuit" placeholder="XX-XXXXXXXX-X"></div>
+      </div>
+      <div class="fg2">
+        <div class="ff"><label>PRECIO BASE</label>
+          <select class="fi" id="cl-precio-base" onchange="togglePreciosCustomCl()">
+            <option value="may">Mayorista estándar</option>
+            <option value="custom">Precio personalizado</option>
+          </select>
+        </div>
+        <div class="ff"><label>FORMA DE PAGO</label>
+          <select class="fi" id="cl-pago">
+            <option value="transferencia">Transferencia</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="cuenta">A cuenta (deuda)</option>
+          </select>
+        </div>
+      </div>
+      <div class="ff">
+        <label>CANAL DE ORIGEN</label>
+        <select class="fi" id="cl-canal">
+          <option value="">— Cómo llegó —</option>
+          <option value="recomendacion">Recomendación</option>
+          <option value="instagram">Instagram</option>
+          <option value="web">Página web</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="directo">Contacto directo</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="ff"><label>CONTACTO (quien hace el pedido)</label><input class="fi" id="cl-contacto" placeholder="Nombre del contacto..."></div>
+      <div class="ff">
+        <label>BOLSAS PERSONALIZADAS</label>
+        <div class="pers-grid" id="pers-grid"></div>
+      </div>
+      <div id="cl-precios-custom-wrap" style="display:none;">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;">PRECIOS ACORDADOS</div>
+        <div id="cl-precios-custom-grid" style="background:var(--surface2);border-radius:8px;padding:10px;"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="guardarCliente()">GUARDAR</button>
+      <button class="btn btn-ghost" onclick="cerrarModal()">CANCELAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COBRO POR ENTREGA -->
+<div class="modal-overlay hidden" id="modal-cobro">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="cobro-modal-title">COBROS PENDIENTES</div>
+    <div id="cobro-entregas-lista"></div>
+    <!-- Form de cobro individual (se muestra inline) -->
+    <div id="cobro-form-individual" style="display:none;background:var(--surface2);border-radius:10px;padding:14px;margin-top:10px;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:10px;" id="cobro-form-titulo">REGISTRAR COBRO</div>
+      <div class="fg2">
+        <div class="ff"><label>MONTO</label><input class="fi" type="number" id="cobro-monto" placeholder="$0" inputmode="numeric"></div>
+        <div class="ff"><label>MÉTODO</label>
+          <select class="fi" id="cobro-metodo">
+            <option value="transferencia">Transferencia</option>
+            <option value="efectivo">Efectivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="ff"><label>CAJA DESTINO</label><select class="fi" id="cobro-caja"></select></div>
+      <div class="fg2">
+        <div class="ff"><label>N° COMPROBANTE / REFERENCIA</label><input class="fi" id="cobro-referencia" placeholder="Nro. transferencia..."></div>
+        <div class="ff"><label>FECHA</label><input class="fi" type="date" id="cobro-fecha"></div>
+      </div>
+      <div class="ff"><label>NOTAS</label><input class="fi" id="cobro-notas" placeholder="Notas..."></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="confirmarCobroEntrega()">✓ CONFIRMAR COBRO</button>
+        <button class="btn btn-ghost btn-sm" onclick="cancelarCobroForm()">Cancelar</button>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <button class="btn btn-ghost btn-sm" style="width:100%;" onclick="cerrarModal()">CERRAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE ENTREGA -->
+<div class="modal-overlay hidden" id="modal-entrega-detalle">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="entrega-det-title">DETALLE ENTREGA</div>
+    <div id="entrega-det-body"></div>
+    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:12px;" onclick="cerrarModal()">CERRAR</button>
+  </div>
+</div>
+
+<!-- MODAL ZONA RÁPIDA -->
+<div class="modal-overlay hidden" id="modal-zona-rapida">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="zona-rapida-title" style="font-size:18px;">ASIGNAR ZONA</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;" id="zona-rapida-btns"></div>
+    <button class="btn btn-ghost" style="width:100%;" onclick="cerrarModal()">Cancelar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ZONAS = ['Tigre','San Isidro','Pilar','Escobar','CABA','Zona Oeste','Zona Sur'];
+const ZONA_COLORS = {
+  'Tigre':'#3498db','San Isidro':'#2ecc71','Pilar':'#9b59b6',
+  'Escobar':'#e67e22','CABA':'#e74c3c','Zona Oeste':'#1abc9c','Zona Sur':'#f39c12'
+};
+
+let clData = {locales:[], particulares:[]};
+let filtroZona = 'todas';
+let filtros = {tipo:'todos', deuda:'todos', iva:'todos', stock:'todos'};
+let filtroSearch = '';
+let filtroOrden = 'nombre';
+let clienteActivoId = null;
+let editandoClienteId = null;
+
+function toggleFiltros(){
+  const panel = document.getElementById('filtros-panel');
+  const activos = document.getElementById('filtros-activos');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if(isOpen) renderFiltrosActivos();
+}
+
+function applyFiltros(){
+  filtros.tipo = document.querySelector('input[name="f-tipo"]:checked')?.value||'todos';
+  filtros.deuda = document.querySelector('input[name="f-deuda"]:checked')?.value||'todos';
+  filtros.iva = document.querySelector('input[name="f-iva"]:checked')?.value||'todos';
+  filtros.stock = document.querySelector('input[name="f-stock"]:checked')?.value||'todos';
+  renderFiltrosActivos();
+  renderLista();
+}
+
+function resetFiltros(){
+  document.querySelectorAll('input[name^="f-"][value="todos"]').forEach(r=>r.checked=true);
+  filtros = {tipo:'todos', deuda:'todos', iva:'todos', stock:'todos'};
+  renderFiltrosActivos();
+  renderLista();
+}
+
+function renderFiltrosActivos(){
+  const chips = [];
+  if(filtros.tipo!=='todos') chips.push(filtros.tipo==='mayorista'?'MAYORISTA':'PARTICULAR');
+  if(filtros.deuda!=='todos') chips.push(filtros.deuda==='deben'?'DEBEN':'AL DÍA');
+  if(filtros.iva!=='todos') chips.push(filtros.iva==='con-iva'?'CON FACTURA':'SIN FACTURA');
+  if(filtros.stock!=='todos') chips.push(filtros.stock==='con-stock'?'CON STOCK':filtros.stock==='reponer-pronto'?'REPONER PRONTO':'URGENTE');
+  const badge = document.getElementById('filtros-badge');
+  if(badge){ badge.style.display=chips.length?'block':'none'; badge.textContent=chips.length; }
+  const activos = document.getElementById('filtros-activos');
+  if(activos){
+    if(chips.length){
+      activos.style.display='flex';
+      activos.innerHTML=chips.map(c=>'<span style="background:var(--accent);color:white;border-radius:12px;padding:2px 8px;font-family:var(--mono);font-size:10px;">'+c+'</span>').join('');
+    } else {
+      activos.style.display='none';
+    }
+  }
+}
+
+// ============================================================
+// LOAD & SAVE
+// ============================================================
+function loadClientes(){
+  try{
+    const raw = JSON.parse(localStorage.getItem('fy_clientes')||'null');
+    if(!raw){ clData={locales:[],particulares:[]}; return; }
+    if(Array.isArray(raw)){
+      const MAYORISTAS=['carniceria','almacen','supermercado','parrilla','restaurante','local','mayorista'];
+      clData.locales = raw.filter(c=>MAYORISTAS.includes(c.tipo||'')).map(normalizarCliente);
+      clData.particulares = raw.filter(c=>!MAYORISTAS.includes(c.tipo||'')).map(normalizarCliente);
+    } else {
+      clData = raw;
+      if(!clData.locales) clData.locales=[];
+      if(!clData.particulares) clData.particulares=[];
+    }
+  }catch(e){ clData={locales:[],particulares:[]}; }
+}
+
+function normalizarCliente(c){
+  const MAYORISTAS=['carniceria','almacen','supermercado','parrilla','restaurante','local','mayorista'];
+  const tipo = MAYORISTAS.includes(c.tipo||'') ? 'mayorista' : 'particular';
+  return {
+    id:String(c.id||uid()), nombre:c.nombre||'', tipo,
+    tipoOriginal:c.tipoOriginal||c.tipo||tipo,
+    zona:c.zona||'', telefono:c.tel||c.telefono||'',
+    direccion:c.dir||c.direccion||'', horario:c.horario||'',
+    notas:c.notas||'', contacto:c.contacto||'',
+    iva:c.condFiscal==='con-iva'?'si':(c.iva||'no'),
+    cuit:c.cuit||'', razonSocial:c.razonSocial||'',
+    precioBase:c.precio==='especial'?'custom':(c.precioBase||'may'),
+    pago:c.pago||'transferencia', canal:c.canal||'',
+    bolsasPersonalizadas:c.bolsasPersonalizadas||[],
+    preciosCustom:c.preciosCustom||{},
+    deuda:c.deuda||0, totalFact:c.totalFact||0,
+    ultimaCompra:c.ultimaCompra||'',
+    movimientos:(c.historial||c.movimientos||[]).map(h=>({
+      id:h.id||uid(), fecha:h.fecha||'',
+      tipo:h.cobrado?'cobrado':(h.tipo||'deuda'),
+      monto:h.monto||0, concepto:h.productos||h.concepto||'Compra',
+      metodo:h.metodo||'', referencia:h.referencia||''
+    })),
+    creadoEn:c.creadoEn||''
+  };
+}
+
+function saveClientes(){
+  localStorage.setItem('fy_clientes', JSON.stringify(clData));
+}
+
+function getTodos(){ return clData.locales.concat(clData.particulares); }
+function getCliente(id){ return getTodos().find(c=>String(c.id)===String(id)); }
+function fmt(n){ return '$'+Math.round(n||0).toLocaleString('es-AR'); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).substr(2,4); }
+function hoy(){ return new Date().toISOString().split('T')[0]; }
+
+function toast(msg,err){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.borderColor=err?'var(--red)':'var(--border2)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function cerrarModal(){
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.add('hidden'));
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{ if(e.target===o) cerrarModal(); });
+});
+
+// ============================================================
+// FILTERS & SORTING
+// ============================================================
+function setTipo(tipo, btn){ /* legacy - not used */ }
+function setOrden(orden){ filtroOrden=orden; renderLista(); }
+function filtrar(){ filtroSearch=document.getElementById('search-input').value.toLowerCase(); renderLista(); }
+function setZona(z){
+  filtroZona=z;
+  renderZonaBar();
+  renderLista();
+}
+
+function getStockPT(){
+  try{
+    const inv = JSON.parse(localStorage.getItem('fy_stock_v1')||'{}');
+    const stock = inv.stock||{};
+    const pt = {};
+    Object.values(stock).forEach(dep=>{
+      Object.entries(dep.pt||{}).forEach(([sku,cant])=>{
+        pt[sku] = (pt[sku]||0) + cant;
+      });
+    });
+    return pt;
+  }catch(e){ return {}; }
+}
+
+function getClientesFiltrados(){
+  let lista = getTodos();
+  // Tipo
+  if(filtros.tipo==='mayorista') lista=lista.filter(c=>c.tipo==='mayorista');
+  else if(filtros.tipo==='particular') lista=lista.filter(c=>c.tipo==='particular');
+  // Deuda
+  if(filtros.deuda==='deben') lista=lista.filter(c=>(c.deuda||0)>0);
+  else if(filtros.deuda==='al-dia') lista=lista.filter(c=>!(c.deuda>0));
+  // IVA
+  if(filtros.iva==='con-iva') lista=lista.filter(c=>c.iva==='si');
+  else if(filtros.iva==='sin-iva') lista=lista.filter(c=>c.iva!=='si');
+  // Stock filter — días de stock restantes por cliente
+  if(filtros.stock!=='todos'){
+    const pt = getStockPT();
+    var opsCache = null;
+    try{ opsCache = JSON.parse(localStorage.getItem('fy_ops_v1')||'{}'); }catch(e){}
+
+    lista = lista.filter(function(c){
+      try{
+        var peds = (opsCache&&opsCache.pedidos||[]).filter(function(p){
+          return String(p.clienteId)===String(c.id) && (p.estado==='cobrado'||p.estado==='entregado');
+        });
+        if(!peds.length) return false;
+
+        // Find top SKU
+        var skuCount = {};
+        peds.forEach(function(p){
+          (p.productos||[]).forEach(function(pr){
+            skuCount[pr.sku] = (skuCount[pr.sku]||0) + pr.cant;
+          });
+        });
+        var topEntry = Object.entries(skuCount).sort(function(a,b){ return b[1]-a[1]; })[0];
+        if(!topEntry) return false;
+        var sku = topEntry[0];
+
+        // Calculate avg daily consumption
+        var fechas = peds.map(function(p){ return p.fecha; }).filter(Boolean).sort();
+        var diasSpan = fechas.length > 1
+          ? Math.max(1, (new Date(fechas[fechas.length-1]) - new Date(fechas[0])) / 86400000)
+          : 30;
+        var totalCant = topEntry[1];
+        var avgPerDay = totalCant / diasSpan; // units per day
+
+        // Stock disponible
+        var stockDisp = pt[sku] || 0;
+        var diasDeStock = avgPerDay > 0 ? stockDisp / avgPerDay : 999;
+
+        if(filtros.stock === 'con-stock')      return diasDeStock > 5;
+        if(filtros.stock === 'reponer-pronto') return diasDeStock >= 0 && diasDeStock <= 5;
+        if(filtros.stock === 'urgente')        return diasDeStock < 0 || (stockDisp === 0 && avgPerDay > 0);
+      }catch(e){ return false; }
+    });
+  }
+  // Zona
+  if(filtroZona==='sin-zona') lista=lista.filter(c=>!c.zona);
+  else if(filtroZona!=='todas') lista=lista.filter(c=>c.zona===filtroZona);
+  // Search
+  if(filtroSearch) lista=lista.filter(c=>(c.nombre||'').toLowerCase().includes(filtroSearch));
+  // Sort
+  if(filtroOrden==='deuda') lista.sort((a,b)=>(b.deuda||0)-(a.deuda||0));
+  else if(filtroOrden==='ultima') lista.sort((a,b)=>(b.ultimaCompra||'').localeCompare(a.ultimaCompra||''));
+  else if(filtroOrden==='sin-zona') lista.sort((a,b)=>(!a.zona?-1:!b.zona?1:0)||(a.nombre||'').localeCompare(b.nombre||''));
+  else if(filtroOrden==='facturacion') lista.sort((a,b)=>(b.totalFact||0)-(a.totalFact||0));
+  else lista.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+  return lista;
+}
+
+// ============================================================
+// STATS BAR
+// ============================================================
+function renderStats(){
+  const todos = getTodos();
+  const deudores = todos.filter(c=>(c.deuda||0)>0);
+  const deudaTotal = deudores.reduce((s,c)=>s+(c.deuda||0),0);
+  const sinZona = todos.filter(c=>!c.zona).length;
+  document.getElementById('st-total').textContent = todos.length;
+  document.getElementById('st-deudores').textContent = deudores.length;
+  document.getElementById('st-deuda-total').textContent = fmt(deudaTotal);
+  document.getElementById('st-sin-zona').textContent = sinZona;
+}
+
+// ============================================================
+// ZONA BAR
+// ============================================================
+function renderZonaBar(){
+  const todos = getTodos();
+  let html = '<button class="zona-chip'+(filtroZona==='todas'?' active':'')+'" style="'+(filtroZona==='todas'?'background:var(--accent);border-color:var(--accent);':'')+'" onclick="setZona(\'todas\')">TODAS</button>';
+  ZONAS.forEach(z=>{
+    const cnt = todos.filter(c=>c.zona===z).length;
+    const color = ZONA_COLORS[z]||'#aaa';
+    const isActive = filtroZona===z;
+    html += '<button class="zona-chip'+(isActive?' active':'')+'" style="'+(isActive?'background:'+color+';border-color:'+color+';color:#fff;':'color:'+color+';border-color:'+color+'44;')+'" onclick="setZona(\''+z+'\')">'+z+' <span style="opacity:0.7;">'+cnt+'</span></button>';
+  });
+  const sinZona = todos.filter(c=>!c.zona).length;
+  if(sinZona>0){
+    html += '<button class="zona-chip'+(filtroZona==='sin-zona'?' active':'')+'" style="color:var(--amber);border-color:rgba(245,166,35,0.3);'+(filtroZona==='sin-zona'?'background:var(--amber);color:#000;':'')+'" onclick="setZona(\'sin-zona\')">Sin zona '+sinZona+'</button>';
+  }
+  document.getElementById('zona-bar').innerHTML = html;
+}
+
+// ============================================================
+// LISTA
+// ============================================================
+function renderLista(){
+  renderStats();
+  renderZonaBar();
+  const lista = getClientesFiltrados();
+  const cont = document.getElementById('lista-clientes');
+  if(!lista.length){
+    cont.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px;">Sin resultados</div>';
+    return;
+  }
+  cont.innerHTML = lista.map(c=>{
+    const deuda = c.deuda||0;
+    const zonaColor = ZONA_COLORS[c.zona]||'var(--text3)';
+    const isActive = String(c.id)===String(clienteActivoId);
+    // Days since last purchase
+    let diasTag = '';
+    if(c.ultimaCompra){
+      const dias = Math.floor((new Date()-new Date(c.ultimaCompra))/86400000);
+      if(dias>60) diasTag = '<span class="cl-inactivo">'+dias+'d</span>';
+    }
+    return '<div class="cl-card'+(isActive?' active':'')+'" onclick="verCliente(\''+c.id+'\')">'+
+      '<div class="cl-nombre">'+c.nombre+'</div>'+
+      '<div class="cl-meta">'+
+        (c.zona?'<span class="cl-zona" style="color:'+zonaColor+'">'+c.zona+'</span>':'<span style="font-family:var(--mono);font-size:9px;color:var(--amber);">SIN ZONA</span>')+
+        '<span class="cl-tipo">'+(c.tipo==='mayorista'?(c.tipoOriginal||'MAYOR').toUpperCase():'PART.')+'</span>'+
+        (deuda>0?'<span class="cl-deuda-badge">'+fmt(deuda)+'</span>':'')+
+        diasTag+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ============================================================
+// VER CLIENTE
+// ============================================================
+function verCliente(id){
+  clienteActivoId = id;
+  window._cid = id;
+  document.querySelectorAll('.cl-card').forEach(el=>el.classList.remove('active'));
+  const card = document.querySelector('[data-cid="'+id+'"]');
+  if(card) card.classList.add('active');
+
+  const c = getCliente(id);
+  if(!c) return;
+
+  const zonaColor = ZONA_COLORS[c.zona]||'var(--text3)';
+  const deuda = c.deuda||0;
+
+  // Get pedidos from ops
+  let pedidos = [];
+  try{
+    const ops = JSON.parse(localStorage.getItem('fy_ops_v1')||'{}');
+    pedidos = (ops.pedidos||[]).filter(p=>String(p.clienteId)===String(id))
+      .sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  }catch(e){}
+
+  // KPI calculations
+  const pedidosCobrados = pedidos.filter(p=>p.estado==='cobrado'||p.estado==='entregado');
+  const thisYear = new Date().getFullYear().toString();
+  const factAnual = pedidosCobrados.filter(p=>(p.fecha||'').startsWith(thisYear)).reduce((s,p)=>s+p.total,0);
+  const totalFact = c.totalFact || pedidosCobrados.reduce((s,p)=>s+p.total,0);
+  const avgTicket = pedidosCobrados.length>0 ? Math.round(pedidosCobrados.reduce((s,p)=>s+p.total,0)/pedidosCobrados.length) : 0;
+
+  // Products most purchased
+  const prodCount = {};
+  pedidos.forEach(p=>{
+    (p.productos||[]).forEach(pr=>{
+      if(!prodCount[pr.sku]) prodCount[pr.sku]={sku:pr.sku,n:pr.nombre||pr.sku,cant:0,total:0};
+      prodCount[pr.sku].cant += pr.cant;
+      prodCount[pr.sku].total += (pr.precio||0)*pr.cant;
+    });
+  });
+  const topProds = Object.values(prodCount).sort((a,b)=>b.cant-a.cant).slice(0,5);
+
+  // Frequency / reposición
+  const fechasCompra = pedidosCobrados.map(p=>p.fecha).filter(Boolean).sort();
+  let frecuencia = null, proximoPedido = null, diasRestantes = null;
+  if(fechasCompra.length>=2){
+    const diffs = [];
+    for(let i=1;i<fechasCompra.length;i++){
+      diffs.push((new Date(fechasCompra[i])-new Date(fechasCompra[i-1]))/86400000);
+    }
+    frecuencia = Math.round(diffs.reduce((s,d)=>s+d,0)/diffs.length);
+    if(c.ultimaCompra && frecuencia){
+      const proxDate = new Date(c.ultimaCompra);
+      proxDate.setDate(proxDate.getDate()+frecuencia);
+      proximoPedido = proxDate.toISOString().split('T')[0];
+      diasRestantes = Math.round((proxDate-new Date())/86400000);
+    }
+  }
+
+  // WhatsApp
+  const waLink = c.telefono ? 'https://wa.me/'+c.telefono.replace(/\D/g,'') : null;
+
+  // Build historial from movimientos + pedidos
+  const movs = c.movimientos||[];
+  const allMovs = [];
+  movs.forEach(m=>allMovs.push({...m,_src:'mov'}));
+  pedidos.slice(0,20).forEach(p=>{
+    const prods=(p.productos||[]).map(pr=>pr.cant+'x '+pr.sku).join(', ');
+    allMovs.push({fecha:p.fecha,tipo:'pedido',concepto:prods||'Pedido',monto:p.total,estado:p.estado,_src:'ped',_pedidoId:p.id});
+  });
+  allMovs.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+
+  let html = '<div class="detalle-wrap">';
+
+  // HEADER con acciones
+  html += '<div class="det-header">'+
+    '<div>'+
+      '<div class="det-nombre">'+c.nombre+'</div>'+
+      '<div class="det-badges">'+
+        (c.zona?'<span class="badge" style="background:'+zonaColor+'22;color:'+zonaColor+'">📍 '+c.zona+'</span>':'<span class="badge b-amber">⚠ Sin zona</span>')+
+        '<span class="badge '+(c.tipo==='mayorista'?'b-amber':'b-blue')+'">'+(c.tipo==='mayorista'?(c.tipoOriginal||'Mayorista').toUpperCase():'PARTICULAR')+'</span>'+
+        (deuda>0?'<span class="badge b-red">Debe '+fmt(deuda)+'</span>':'<span class="badge b-green">Al día</span>')+
+        (c.iva==='si'?'<span class="badge b-blue">Con factura</span>':'')+
+      '</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;">'+
+      (waLink?'<a href="'+waLink+'" target="_blank" style="text-decoration:none;"><button class="btn btn-green btn-sm">💬 WhatsApp</button></a>':'')+
+      '<button class="btn btn-ghost btn-sm" onclick="abrirZonaRapida(\''+c.id+'\')">📍 Zona</button>'+
+      '<button class="btn btn-ghost btn-sm" onclick="abrirModalCliente(\''+c.id+'\')">✏ Editar</button>'+
+      (deuda>0?'<button class="btn btn-primary btn-sm" onclick="abrirCobro(\''+c.id+'\')">💰 Cobrar '+fmt(deuda)+'</button>':'')+
+    '</div>'+
+  '</div>';
+
+  // 1. DATOS
+  html += '<div class="section" style="margin-bottom:12px;">'+
+    '<div class="section-header">'+
+      '<div class="section-title">DATOS</div>'+
+      '<button class="btn-icon" style="font-size:13px;" onclick="abrirModalCliente(\''+c.id+'\')">✏ editar</button>'+
+    '</div>'+
+    '<div class="info-row"><div class="info-lbl">Dirección</div><div class="info-val">'+(c.direccion||'—')+'</div></div>'+
+    '<div class="info-row"><div class="info-lbl">Teléfono</div><div class="info-val">'+
+      (c.telefono?(c.telefono+(waLink?' <a href="'+waLink+'" target="_blank" style="color:var(--green);font-size:12px;">→ WA</a>':'')):'—')+
+    '</div></div>'+
+    '<div class="info-row"><div class="info-lbl">Horario</div><div class="info-val">'+(c.horario||'—')+'</div></div>'+
+    '<div class="info-row"><div class="info-lbl">Zona</div><div class="info-val" style="color:'+zonaColor+'">'+(c.zona||'—')+'</div></div>'+
+    '<div class="info-row"><div class="info-lbl">Facturación</div><div class="info-val">'+(c.iva==='si'?'Con factura (IVA)':c.iva==='exento'?'Exento':'Sin factura')+'</div></div>'+
+    (c.cuit?'<div class="info-row"><div class="info-lbl">CUIT</div><div class="info-val" style="font-family:var(--mono);">'+c.cuit+'</div></div>':'')+
+    (c.contacto?'<div class="info-row"><div class="info-lbl">Contacto</div><div class="info-val">'+c.contacto+'</div></div>':'')+
+    (c.notas?'<div class="info-row"><div class="info-lbl">Notas</div><div class="info-val" style="color:var(--text2);">'+c.notas+'</div></div>':'')+
+    (c.canal?'<div class="info-row"><div class="info-lbl">Canal origen</div><div class="info-val">'+c.canal+'</div></div>':'')+
+    (c.pago?'<div class="info-row"><div class="info-lbl">Forma de pago</div><div class="info-val">'+c.pago+'</div></div>':'')+
+  '</div>';
+
+  // 2. KPIs
+  html += '<div class="kpi-grid" style="margin-bottom:12px;">'+
+    '<div class="kpi"><div class="kpi-lbl">DEUDA ACTUAL</div><div class="kpi-val" style="color:'+(deuda>0?'var(--red)':'var(--green)')+';">'+fmt(deuda)+'</div></div>'+
+    '<div class="kpi"><div class="kpi-lbl">TICKET PROMEDIO</div><div class="kpi-val" style="font-size:18px;">'+fmt(avgTicket)+'</div></div>'+
+    '<div class="kpi"><div class="kpi-lbl">FACTURADO '+thisYear+'</div><div class="kpi-val" style="font-size:18px;">'+fmt(factAnual)+'</div></div>'+
+    '<div class="kpi"><div class="kpi-lbl">TOTAL FACTURADO</div><div class="kpi-val" style="font-size:18px;">'+fmt(totalFact)+'</div></div>'+
+  '</div>';
+
+  // 3. REPOSICIÓN
+  if(proximoPedido!==null){
+    const pred_color = diasRestantes<=0?'var(--red)':diasRestantes<=7?'var(--amber)':'var(--green)';
+    html += '<div class="pred-card" style="margin-bottom:12px;">'+
+      '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:10px;">REPOSICIÓN ESTIMADA</div>'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">'+
+        '<div>'+
+          '<div style="font-family:var(--display);font-size:28px;color:'+pred_color+';">'+proximoPedido+'</div>'+
+          '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px;">Frecuencia cada '+frecuencia+' días · Última: '+(c.ultimaCompra||'—')+'</div>'+
+        '</div>'+
+        '<div style="text-align:right;">'+
+          '<div style="font-family:var(--display);font-size:42px;color:'+pred_color+';">'+(diasRestantes<=0?'HOY':Math.abs(diasRestantes)+'d')+'</div>'+
+          '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);">'+(diasRestantes<0?'VENCIDO':diasRestantes===0?'HOY':diasRestantes===1?'MAÑANA':'RESTANTES')+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  } else {
+    // No enough data - show placeholder
+    html += '<div class="section" style="margin-bottom:12px;">'+
+      '<div class="section-header"><div class="section-title">REPOSICIÓN ESTIMADA</div></div>'+
+      '<div style="padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--text3);">'+
+        (pedidosCobrados.length===0?'Sin historial de compras — la predicción aparece después de la primera entrega.':
+         pedidosCobrados.length===1?'Solo hay 1 compra registrada — se necesitan al menos 2 para calcular la frecuencia.':
+         'Sin datos suficientes.')+
+      '</div>'+
+    '</div>';
+  }
+
+  // 4. PRODUCTOS MÁS COMPRADOS
+  if(topProds.length){
+    html += '<div class="section" style="margin-bottom:12px;">'+
+      '<div class="section-header"><div class="section-title">PRODUCTOS MÁS COMPRADOS</div></div>'+
+      topProds.map(p=>
+        '<div class="info-row">'+
+          '<div class="info-lbl"><span class="badge b-gray">'+p.sku+'</span></div>'+
+          '<div class="info-val">'+p.n+'</div>'+
+          '<div style="font-family:var(--mono);font-weight:600;color:var(--accent2);">'+p.cant+' u</div>'+
+        '</div>'
+      ).join('')+
+    '</div>';
+  }
+
+  // 5. HISTORIAL
+  html += '<div class="section">'+
+    '<div class="section-header">'+
+      '<div class="section-title">HISTORIAL</div>'+
+      (deuda>0?'<button class="btn btn-primary btn-sm" onclick="abrirCobro(\''+c.id+'\')">COBRAR '+fmt(deuda)+'</button>':'')+
+    '</div>'+
+    (allMovs.length?allMovs.slice(0,25).map(m=>{
+      const esCobro=m.tipo==='cobro';
+      const esPed=m.tipo==='pedido';
+      const color=esCobro?'var(--green)':esPed?'var(--text2)':'var(--amber)';
+      const sign=esCobro?'+ ':'';
+      const estadoColor=m.estado==='cobrado'?'var(--green)':m.estado==='entregado'?'var(--blue)':m.estado==='camino'?'var(--amber)':'var(--text3)';
+      const estadoBadge=esPed?'<span style="font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:4px;background:var(--surface3);color:'+estadoColor+';">'+(m.estado||'pedido').toUpperCase()+'</span>':'';
+      return '<div class="hist-row">'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div style="font-weight:500;font-size:13px;">'+(m.concepto||'—')+'</div>'+
+          '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px;display:flex;gap:6px;align-items:center;">'+
+            '<span>'+m.fecha+'</span>'+estadoBadge+
+            (m.referencia?'<span style="color:var(--text3);">Ref: '+m.referencia+'</span>':'')+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">'+
+          '<span style="font-family:var(--mono);color:'+color+';font-weight:600;">'+sign+fmt(m.monto)+'</span>'+
+          (esPed&&m._pedidoId?'<button class="btn-icon" style="font-size:13px;padding:2px 6px;" data-pid="'+m._pedidoId+'" onclick="verDetalleEntrega(this)">🔍</button>':'')+
+        '</div>'+
+      '</div>';
+    }).join(''):'<div style="text-align:center;padding:24px;color:var(--text3);font-family:var(--mono);font-size:12px;">Sin historial registrado</div>')+
+  '</div>';
+
+  html += '<div style="margin-top:16px;padding-bottom:20px;"><button class="btn btn-danger btn-sm" onclick="eliminarCliente(\''+c.id+'\')">Eliminar cliente</button></div>';
+  html += '</div>';
+
+  document.getElementById('detalle-panel').innerHTML = html;
+}
+
+// ============================================================
+// MODAL CLIENTE
+// ============================================================
+function toggleCamposMayorista(){
+  const tipo=document.getElementById('cl-tipo').value;
+  const isMay=tipo==='mayorista';
+  document.getElementById('campos-mayorista').style.display=isMay?'block':'none';
+  const sub=document.getElementById('cl-subtipo-wrap');
+  if(sub) sub.style.display=isMay?'block':'none';
+  if(isMay) renderPersGrid();
+  togglePreciosCustomCl();
+}
+
+function togglePreciosCustomCl(){
+  const pb=document.getElementById('cl-precio-base');
+  const wrap=document.getElementById('cl-precios-custom-wrap');
+  if(!wrap) return;
+  if(pb&&pb.value==='custom'){ wrap.style.display='block'; renderPreciosCustomCl(); }
+  else wrap.style.display='none';
+}
+
+function renderPersGrid(seleccionadas){
+  seleccionadas=seleccionadas||[];
+  const PERS=[
+    {sku:'B4CC',n:'Cuatro Carnes 4kg'},{sku:'B8CC',n:'Cuatro Carnes 8kg'},
+    {sku:'B4SOM',n:'Sommelier 4kg'},{sku:'B4AL',n:'Al Fuego 4kg'},
+    {sku:'B4CAR',n:'Carlota 4kg'},{sku:'B4RAF',n:'Est. Rafaela 4kg'},
+    {sku:'B4CJ',n:'Cab. Juramento 4kg'},{sku:'B8CJ',n:'Cab. Juramento 8kg'},
+    {sku:'B4CABARJ',n:'Cab. Arg. 4kg'},{sku:'B10CABARJ',n:'Cab. Arg. 10kg'},
+    {sku:'B8PAR',n:'Parmegiano 8kg'},
+  ];
+  document.getElementById('pers-grid').innerHTML=PERS.map(p=>
+    '<label class="pers-check"><input type="checkbox" value="'+p.sku+'"'+(seleccionadas.includes(p.sku)?' checked':'')+'>'+
+    '<span style="font-family:var(--mono);font-size:11px;">'+p.sku+' — '+p.n+'</span></label>'
+  ).join('');
+}
+
+function renderPreciosCustomCl(savedPrices){
+  savedPrices=savedPrices||{};
+  var preciosBase={};
+  try{
+    const fp=JSON.parse(localStorage.getItem('fy_precios')||'{}');
+    Object.keys(fp).forEach(sku=>{ preciosBase[sku]=fp[sku].may||fp[sku].precioMay||0; });
+  }catch(e){}
+  const FALLBACK={FY:8000,B4:4000,B8:8300,BB10:13500,BB3:4500,PA8:7000,PA10:8000,LQB10:5200,LQC10:5200,LESP10:5200};
+  function getProds(){
+  try{
+    var cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    var prods=cfg.productos||[];
+    if(prods.length) return prods.filter(function(p){return p.activo!==false;}).map(function(p){return{sku:p.sku,n:p.nombre};});
+  }catch(ex){}
+  return [{sku:'FY',n:'Caja FY 4kg'},{sku:'B4',n:'Bolsa 4kg'},{sku:'B8',n:'Bolsa 8kg'},{sku:'BB10',n:'Sel. a mano 10kg'},{sku:'BB3',n:'Sel. a mano 3kg'},{sku:'PA8',n:'Parrilla 8kg'},{sku:'PA10',n:'Parrilla 10kg'},{sku:'LQB10',n:'Leña QB 10kg'},{sku:'LQC10',n:'Leña QC 10kg'},{sku:'LESP10',n:'Leña Espinillo 10kg'}];
+}
+const PRODS=getProds();
+  document.querySelectorAll('#pers-grid input:checked').forEach(c=>PRODS.push({sku:c.value,n:c.value}));
+  const grid=document.getElementById('cl-precios-custom-grid');
+  if(!grid) return;
+  grid.innerHTML=PRODS.map(p=>{
+    const base=savedPrices[p.sku]||preciosBase[p.sku]||FALLBACK[p.sku]||0;
+    const isMayBase=!savedPrices[p.sku]&&base>0;
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'+
+      '<span style="font-family:var(--mono);font-size:10px;color:var(--text3);width:55px;flex-shrink:0;">'+p.sku+'</span>'+
+      '<span style="flex:1;font-size:13px;">'+p.n+'</span>'+
+      '<input type="number" class="fi" style="width:100px;text-align:right;color:'+(isMayBase?'var(--text2)':'var(--accent2)')+';" id="cprice-'+p.sku+'" value="'+(base||'')+'" placeholder="$0" inputmode="numeric">'+
+    '</div>';
+  }).join('');
+}
+
+function abrirModalCliente(id){
+  editandoClienteId=id;
+  const c=id?getCliente(id):null;
+  document.getElementById('modal-cl-title').textContent=c?'EDITAR CLIENTE':'NUEVO CLIENTE';
+  document.getElementById('cl-nombre').value=c?c.nombre:'';
+  document.getElementById('cl-tipo').value=c?(c.tipo||'particular'):'particular';
+  document.getElementById('cl-zona').value=c?(c.zona||''):'';
+  document.getElementById('cl-tel').value=c?(c.telefono||''):'';
+  document.getElementById('cl-horario').value=c?(c.horario||''):'';
+  document.getElementById('cl-dir').value=c?(c.direccion||''):'';
+  document.getElementById('cl-notas').value=c?(c.notas||''):'';
+  document.getElementById('cl-iva').value=c?(c.iva||'no'):'no';
+  if(document.getElementById('cl-razon')) document.getElementById('cl-razon').value=c?(c.razonSocial||''):'';
+  if(document.getElementById('cl-cuit')) document.getElementById('cl-cuit').value=c?(c.cuit||''):'';
+  if(document.getElementById('cl-precio-base')) document.getElementById('cl-precio-base').value=c?(c.precioBase||'may'):'may';
+  if(document.getElementById('cl-pago')) document.getElementById('cl-pago').value=c?(c.pago||'transferencia'):'transferencia';
+  if(document.getElementById('cl-canal')) document.getElementById('cl-canal').value=c?(c.canal||''):'';
+  if(document.getElementById('cl-contacto')) document.getElementById('cl-contacto').value=c?(c.contacto||''):'';
+  if(document.getElementById('cl-subtipo')) document.getElementById('cl-subtipo').value=c?(c.tipoOriginal||'carniceria'):'carniceria';
+  toggleCamposMayorista();
+  if(c&&c.tipo==='mayorista') renderPersGrid(c.bolsasPersonalizadas||[]);
+  if(c&&c.preciosCustom) renderPreciosCustomCl(c.preciosCustom);
+  (document.getElementById('modal-cliente')||{classList:{remove:()=>{}}}).classList.remove('hidden');
+  setTimeout(()=>document.getElementById('cl-nombre').focus(),100);
+}
+
+function guardarCliente(){
+  const nombre=document.getElementById('cl-nombre').value.trim();
+  if(!nombre){ toast('Ingresá un nombre',true); return; }
+  const tipo=document.getElementById('cl-tipo').value;
+  const persChecks=document.querySelectorAll('#pers-grid input:checked');
+  const bolsasPersonalizadas=Array.from(persChecks).map(c=>c.value);
+  const preciosCustom=(()=>{
+    const pb=document.getElementById('cl-precio-base');
+    if(!pb||pb.value!=='custom') return {};
+    const prices={};
+    document.querySelectorAll('[id^="cprice-"]').forEach(el=>{
+      const sku=el.id.replace('cprice-','');
+      const val=parseFloat(el.value)||0;
+      if(val>0) prices[sku]=val;
+    });
+    return prices;
+  })();
+
+  const cliente={
+    id:editandoClienteId||uid(), nombre, tipo,
+    tipoOriginal:tipo==='mayorista'?(document.getElementById('cl-subtipo')?document.getElementById('cl-subtipo').value:'carniceria'):'particular',
+    zona:document.getElementById('cl-zona').value,
+    telefono:document.getElementById('cl-tel').value.trim(),
+    horario:document.getElementById('cl-horario').value.trim(),
+    direccion:document.getElementById('cl-dir').value.trim(),
+    notas:document.getElementById('cl-notas').value.trim(),
+    iva:document.getElementById('cl-iva').value,
+    razonSocial:document.getElementById('cl-razon')?document.getElementById('cl-razon').value.trim():'',
+    cuit:document.getElementById('cl-cuit')?document.getElementById('cl-cuit').value.trim():'',
+    precioBase:document.getElementById('cl-precio-base')?document.getElementById('cl-precio-base').value:'may',
+    pago:document.getElementById('cl-pago')?document.getElementById('cl-pago').value:'transferencia',
+    canal:document.getElementById('cl-canal')?document.getElementById('cl-canal').value:'',
+    contacto:document.getElementById('cl-contacto')?document.getElementById('cl-contacto').value.trim():'',
+    bolsasPersonalizadas, preciosCustom,
+    deuda:0, movimientos:[], creadoEn:new Date().toISOString()
+  };
+
+  if(editandoClienteId){
+    const existing=getCliente(editandoClienteId);
+    if(existing){ cliente.deuda=existing.deuda||0; cliente.movimientos=existing.movimientos||[]; cliente.creadoEn=existing.creadoEn; cliente.totalFact=existing.totalFact||0; cliente.ultimaCompra=existing.ultimaCompra||''; }
+    clData.locales=clData.locales.filter(c=>String(c.id)!==String(editandoClienteId));
+    clData.particulares=clData.particulares.filter(c=>String(c.id)!==String(editandoClienteId));
+  }
+
+  if(tipo==='mayorista') clData.locales.unshift(cliente);
+  else clData.particulares.unshift(cliente);
+
+  saveClientes();
+  cerrarModal();
+  renderLista();
+  if(editandoClienteId) verCliente(editandoClienteId);
+  else verCliente(cliente.id);
+  toast(editandoClienteId?'Cliente actualizado':'Cliente creado');
+}
+
+function eliminarCliente(id){
+  if(!confirm('¿Eliminar este cliente?')) return;
+  clData.locales=clData.locales.filter(c=>String(c.id)!==String(id));
+  clData.particulares=clData.particulares.filter(c=>String(c.id)!==String(id));
+  saveClientes();
+  clienteActivoId=null;
+  document.getElementById('detalle-panel').innerHTML='<div class="empty-state"><div class="empty-icon">✓</div><div>Cliente eliminado</div></div>';
+  renderLista();
+}
+
+// ============================================================
+// COBRO
+// ============================================================
+var cobroPedidoActivo = null;
+
+function getCajasOpts(){
+  try{
+    const cfg=JSON.parse(localStorage.getItem('fy_config_v1')||'{}');
+    const cajas=(cfg.cajas&&cfg.cajas.pesos)||[];
+    if(cajas.length) return cajas.map(c=>'<option value="'+c.id+'">'+c.nombre+'</option>').join('');
+  }catch(e){}
+  return '<option value="financiera">Financiera</option><option value="efectivo-tigre">Efectivo Tigre</option>';
+}
+
+function abrirCobro(id){
+  const c=getCliente(id);
+  if(!c) return;
+  clienteActivoId=id;
+  document.getElementById('cobro-modal-title').textContent='COBROS — '+c.nombre;
+  document.getElementById('cobro-form-individual').style.display='none';
+  document.getElementById('cobro-caja').innerHTML=getCajasOpts();
+  document.getElementById('cobro-fecha').value=hoy();
+
+  // Get pending pedidos from ops
+  let pedidosPendientes=[];
+  try{
+    const ops=JSON.parse(localStorage.getItem('fy_ops_v1')||'{}');
+    pedidosPendientes=(ops.pedidos||[]).filter(p=>
+      String(p.clienteId)===String(id)&&
+      (p.estado==='entregado'||p.estado==='cobrado')&&
+      !p.cobradoCompleto
+    ).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  }catch(e){}
+
+  const deudaTotal=c.deuda||0;
+  let html='';
+
+  if(deudaTotal>0){
+    html+='<div style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;">'+
+      '<span style="font-family:var(--mono);font-size:11px;color:var(--text2);">DEUDA TOTAL</span>'+
+      '<span style="font-family:var(--display);font-size:22px;color:var(--red);">'+fmt(deudaTotal)+'</span>'+
+    '</div>';
+  }
+
+  if(pedidosPendientes.length){
+    html+='<div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;">ENTREGAS PENDIENTES DE COBRO</div>';
+    pedidosPendientes.forEach(p=>{
+      const prods=(p.productos||[]).map(pr=>pr.cant+'x '+pr.sku).join(', ');
+      const cobro=p.pagoPrevio||{};
+      const yaCobrado=p.estado==='cobrado'&&cobro.pagado;
+      html+='<div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--border);">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'+
+          '<div>'+
+            '<div style="font-weight:500;">'+p.fecha+'</div>'+
+            '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);">'+prods+'</div>'+
+          '</div>'+
+          '<div style="font-family:var(--display);font-size:18px;color:var(--accent2);">'+fmt(p.total)+'</div>'+
+        '</div>'+
+        (yaCobrado?
+          '<span style="font-family:var(--mono);font-size:10px;color:var(--green);">✓ Cobrado</span>'
+        :
+          '<button class="btn btn-primary btn-sm btn-full" data-pid="'+p.id+'" onclick="abrirFormCobro(this)">COBRAR ESTA ENTREGA</button>'
+        )+
+      '</div>';
+    });
+  } else if(deudaTotal>0){
+    // No pedidos linked but has debt - allow manual cobro
+    html+='<div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;">COBRO MANUAL</div>';
+    html+='<button class="btn btn-primary btn-sm btn-full" data-pid="manual" onclick="abrirFormCobro(this)">REGISTRAR COBRO — '+fmt(deudaTotal)+'</button>';
+  } else {
+    html+='<div style="text-align:center;padding:20px;color:var(--text3);font-family:var(--mono);font-size:12px;">El cliente está al día</div>';
+  }
+
+  document.getElementById('cobro-entregas-lista').innerHTML=html;
+  (document.getElementById('modal-cobro')||{classList:{remove:()=>{}}}).classList.remove('hidden');
+}
+
+function abrirFormCobro(btn){
+  const pid=btn.getAttribute('data-pid');
+  cobroPedidoActivo=pid;
+  // Pre-fill monto
+  let monto=0;
+  if(pid==='manual'){
+    const c=getCliente(clienteActivoId);
+    monto=c?c.deuda:0;
+    document.getElementById('cobro-form-titulo').textContent='COBRO MANUAL';
+  } else {
+    try{
+      const ops=JSON.parse(localStorage.getItem('fy_ops_v1')||'{}');
+      const ped=(ops.pedidos||[]).find(p=>p.id===pid);
+      if(ped){ monto=ped.total; document.getElementById('cobro-form-titulo').textContent='COBRO — '+ped.fecha; }
+    }catch(e){}
+  }
+  document.getElementById('cobro-monto').value=monto||'';
+  document.getElementById('cobro-referencia').value='';
+  document.getElementById('cobro-notas').value='';
+  document.getElementById('cobro-metodo').value='transferencia';
+  document.getElementById('cobro-form-individual').style.display='block';
+  document.getElementById('cobro-form-individual').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelarCobroForm(){
+  document.getElementById('cobro-form-individual').style.display='none';
+  cobroPedidoActivo=null;
+}
+
+function confirmarCobroEntrega(){
+  const id=clienteActivoId;
+  const c=getCliente(id);
+  if(!c) return;
+  const monto=parseFloat(document.getElementById('cobro-monto').value)||0;
+  if(!monto){ toast('Ingresá el monto',true); return; }
+  const metodo=document.getElementById('cobro-metodo').value;
+  const caja=document.getElementById('cobro-caja').value;
+  const fecha=document.getElementById('cobro-fecha').value||hoy();
+  const referencia=document.getElementById('cobro-referencia').value.trim();
+  const notas=document.getElementById('cobro-notas').value.trim();
+
+  // Update client debt
+  c.deuda=Math.max(0,(c.deuda||0)-monto);
+  if(!c.movimientos) c.movimientos=[];
+  c.movimientos.unshift({id:uid(),fecha,tipo:'cobro',monto,concepto:'Cobro'+(notas?' — '+notas:''),metodo,caja,referencia,pedidoId:cobroPedidoActivo});
+
+  // Mark pedido as cobrado in ops
+  if(cobroPedidoActivo&&cobroPedidoActivo!=='manual'){
+    try{
+      const ops=JSON.parse(localStorage.getItem('fy_ops_v1')||'{}');
+      const ped=(ops.pedidos||[]).find(p=>p.id===cobroPedidoActivo);
+      if(ped){
+        ped.estado='cobrado';
+        ped.cobradoCompleto=true;
+        ped.cobro={monto,metodo,caja,referencia,fecha};
+        // Find recorrido and mark
+        const rec=(ops.recorridos||[]).find(r=>r.pedidoIds&&r.pedidoIds.includes(cobroPedidoActivo));
+        if(rec){
+          if(!rec.cobros) rec.cobros={};
+          rec.cobros[cobroPedidoActivo]={entregado:true,metodo,monto,pagado:true,cajaTransf:caja,referencia};
+        }
+        localStorage.setItem('fy_ops_v1',JSON.stringify(ops));
+      }
+    }catch(e){}
+  }
+
+  // Register in finanzas
+  try{
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    if(!fin.cajas) fin.cajas={};
+    if(!fin.movimientos) fin.movimientos=[];
+    fin.cajas[caja]=(fin.cajas[caja]||0)+monto;
+    fin.movimientos.unshift({id:'mc_'+Date.now(),fecha,concepto:'Cobro '+c.nombre+(notas?' — '+notas:''),monto,tipo:'entrada',caja,cat:'venta',referencia});
+    localStorage.setItem('fy_finanzas',JSON.stringify(fin));
+  }catch(e){}
+
+  saveClientes();
+  toast('Cobro registrado — '+fmt(monto)+(referencia?' · Ref: '+referencia:''));
+
+  // If still has debt, refresh modal; otherwise close
+  if(c.deuda>0){
+    abrirCobro(id);
+  } else {
+    cerrarModal();
+  }
+  verCliente(id);
+  renderLista();
+}
+
+// Legacy compat
+function confirmarCobro(){ confirmarCobroEntrega(); }
+
+// ============================================================
+// ZONA RÁPIDA
+// ============================================================
+function abrirZonaRapida(id){
+  const c=getCliente(id);
+  if(!c) return;
+  document.getElementById('zona-rapida-title').textContent=c.nombre;
+  document.getElementById('zona-rapida-btns').innerHTML=ZONAS.map(z=>{
+    const color=ZONA_COLORS[z]||'var(--text2)';
+    const active=c.zona===z;
+    return '<button class="btn btn-sm" style="border:2px solid '+(active?color:'var(--border)')+';background:'+(active?color+'22':'var(--surface2)')+';color:'+(active?color:'var(--text2)')+';font-family:var(--mono);font-size:11px;" data-zona="'+z+'" data-cid="'+id+'" onclick="asignarZonaRapida(this)">'+z+'</button>';
+  }).join('');
+  (document.getElementById('modal-zona-rapida')||{classList:{remove:()=>{}}}).classList.remove('hidden');
+}
+
+function asignarZonaRapida(btn){
+  const zona=btn.getAttribute('data-zona');
+  const cid=btn.getAttribute('data-cid');
+  const c=getCliente(cid);
+  if(!c) return;
+  c.zona=zona;
+  saveClientes();
+  cerrarModal();
+  renderLista();
+  if(String(clienteActivoId)===String(cid)) verCliente(cid);
+  toast(c.nombre+' → '+zona);
+}
+
+// ============================================================
+// FACTURAS
+// ============================================================
+function abrirFacturas(){
+  clienteActivoId=null;
+  document.querySelectorAll('.chip').forEach(b=>b.classList.remove('active'));
+  const bf=document.getElementById('btn-facturas');
+  if(bf) bf.classList.add('active');
+  renderFacturasPanel();
+}
+
+function getFacturasData(){
+  try{
+    const ops=JSON.parse(localStorage.getItem('fy_ops_v1')||'{}');
+    const pedidos=(ops.pedidos||[]).filter(p=>(p.iva==='si')&&(p.estado==='entregado'||p.estado==='cobrado'));
+    const facturas=JSON.parse(localStorage.getItem('fy_facturas')||'{}');
+    return pedidos.map(p=>{
+      const f=facturas[p.id]||{};
+      const totalNeto=p.totalNeto||Math.round(p.total/1.21);
+      return {pedidoId:p.id,clienteNombre:p.clienteNombre,clienteId:p.clienteId,fecha:p.fecha,total:p.total,totalNeto,iva:p.total-totalNeto,cuit:p.cuit||'',emitida:f.emitida||false,enviada:f.enviada||false,nroComprobante:f.nroComprobante||'',fechaEmision:f.fechaEmision||''};
+    }).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  }catch(e){ return []; }
+}
+
+function renderFacturasPanel(){
+  const facturas=getFacturasData();
+  const pendientes=facturas.filter(f=>!f.emitida);
+  const emitidas=facturas.filter(f=>f.emitida&&!f.enviada);
+  const hoyStr=new Date().toISOString().slice(0,7);
+  const totalMes=facturas.filter(f=>f.emitida&&(f.fechaEmision||f.fecha||'').startsWith(hoyStr)).reduce((s,f)=>s+f.total,0);
+  const ivaDebito=facturas.filter(f=>f.emitida&&(f.fechaEmision||f.fecha||'').startsWith(hoyStr)).reduce((s,f)=>s+f.iva,0);
+
+  let html='<div class="detalle-wrap">';
+  html+='<div style="font-family:var(--display);font-size:28px;letter-spacing:1px;margin-bottom:16px;">FACTURAS</div>';
+  html+='<div class="kpi-grid">'+
+    '<div class="kpi"><div class="kpi-lbl">PENDIENTES</div><div class="kpi-val" style="color:var(--amber);">'+pendientes.length+'</div></div>'+
+    '<div class="kpi"><div class="kpi-lbl">SIN ENVIAR</div><div class="kpi-val" style="color:var(--blue);">'+emitidas.length+'</div></div>'+
+    '<div class="kpi"><div class="kpi-lbl">FACTURADO ESTE MES</div><div class="kpi-val" style="font-size:16px;">'+fmt(totalMes)+'</div></div>'+
+    '<div class="kpi"><div class="kpi-lbl">IVA DÉBITO FISCAL</div><div class="kpi-val" style="font-size:16px;color:var(--red);">'+fmt(ivaDebito)+'</div></div>'+
+  '</div>';
+
+  html+='<div style="display:flex;gap:8px;margin-bottom:16px;">'+
+    '<button class="btn btn-primary btn-sm" onclick="renderFacturasFiltered(\'pendientes\')">⏳ Pendientes ('+pendientes.length+')</button>'+
+    '<button class="btn btn-ghost btn-sm" onclick="renderFacturasFiltered(\'emitidas\')">📄 Sin enviar ('+emitidas.length+')</button>'+
+    '<button class="btn btn-ghost btn-sm" onclick="renderFacturasFiltered(\'todas\')">Todas ('+facturas.length+')</button>'+
+  '</div>';
+  html+='<div id="facturas-lista">'+renderFacturasList(pendientes.concat(emitidas))+'</div>';
+  html+='</div>';
+
+  document.getElementById('detalle-panel').innerHTML=html;
+  // Sync debito fiscal
+  try{
+    const fin=JSON.parse(localStorage.getItem('fy_finanzas')||'{}');
+    if(!fin.impuestos) fin.impuestos={};
+    if(!fin.impuestos[hoyStr]) fin.impuestos[hoyStr]={};
+    fin.impuestos[hoyStr].debitoFacturado=ivaDebito;
+    fin.impuestos[hoyStr].totalFacturado=totalMes;
+    localStorage.setItem('fy_finanzas',JSON.stringify(fin));
+  }catch(e){}
+}
+
+function renderFacturasFiltered(filtro){
+  const f=getFacturasData();
+  const lista=filtro==='pendientes'?f.filter(x=>!x.emitida):filtro==='emitidas'?f.filter(x=>x.emitida&&!x.enviada):f;
+  document.getElementById('facturas-lista').innerHTML=renderFacturasList(lista);
+}
+
+function renderFacturasList(lista){
+  if(!lista.length) return '<div style="text-align:center;padding:30px;color:var(--text3);font-family:var(--mono);font-size:12px;">Sin facturas en este estado</div>';
+  return lista.map(f=>{
+    const estado=f.emitida&&f.enviada?'ENVIADA':f.emitida?'EMITIDA':'PENDIENTE';
+    const estadoColor=f.emitida&&f.enviada?'var(--green)':f.emitida?'var(--blue)':'var(--amber)';
+    return '<div class="section" style="margin-bottom:10px;">'+
+      '<div style="padding:14px 16px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px;">'+
+          '<div>'+
+            '<div style="font-weight:600;font-size:15px;">'+f.clienteNombre+'</div>'+
+            '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">'+f.fecha+(f.cuit?' · '+f.cuit:'')+'</div>'+
+          '</div>'+
+          '<div style="text-align:right;">'+
+            '<div style="font-family:var(--display);font-size:20px;">'+fmt(f.total)+'</div>'+
+            '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);">Neto: '+fmt(f.totalNeto)+' · IVA: '+fmt(f.iva)+'</div>'+
+            '<span style="font-family:var(--mono);font-size:9px;font-weight:600;color:'+estadoColor+';">'+estado+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'+
+          (!f.emitida?
+            '<input type="text" placeholder="Nro. comprobante..." style="flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;" id="nro-'+f.pedidoId+'" value="'+(f.nroComprobante||'')+'">'+
+            '<button class="btn btn-primary btn-sm" data-pid="'+f.pedidoId+'" onclick="marcarEmitida(this)">✓ Emitida</button>'
+          :f.emitida&&!f.enviada?
+            '<span style="font-family:var(--mono);font-size:11px;color:var(--text3);flex:1;">Nro: '+(f.nroComprobante||'—')+'</span>'+
+            '<button class="btn btn-blue btn-sm" data-pid="'+f.pedidoId+'" onclick="marcarEnviada(this)">📧 Enviada</button>'
+          :
+            '<span style="font-family:var(--mono);font-size:11px;color:var(--green);">✓ Enviada · Nro: '+(f.nroComprobante||'—')+'</span>'
+          )+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function marcarEmitida(btn){
+  const pid=btn.getAttribute('data-pid');
+  const nro=(document.getElementById('nro-'+pid)||{}).value||'';
+  const f=JSON.parse(localStorage.getItem('fy_facturas')||'{}');
+  if(!f[pid]) f[pid]={};
+  f[pid].emitida=true; f[pid].nroComprobante=nro; f[pid].fechaEmision=hoy();
+  localStorage.setItem('fy_facturas',JSON.stringify(f));
+  renderFacturasPanel(); toast('Factura emitida');
+}
+
+function marcarEnviada(btn){
+  const pid=btn.getAttribute('data-pid');
+  const f=JSON.parse(localStorage.getItem('fy_facturas')||'{}');
+  if(!f[pid]) f[pid]={};
+  f[pid].enviada=true;
+  localStorage.setItem('fy_facturas',JSON.stringify(f));
+  renderFacturasPanel(); toast('Factura enviada al cliente');
+}
+
+// ============================================================
+// DETALLE ENTREGA
+// ============================================================
+function verDetalleEntrega(btn){
+  const pid=btn.getAttribute('data-pid');
+  try{
+    const ops=JSON.parse(localStorage.getItem('fy_ops_v1')||'{}');
+    const p=(ops.pedidos||[]).find(x=>x.id===pid);
+    if(!p){ toast('Pedido no encontrado',true); return; }
+    // Find recorrido for chofer info
+    const rec=(ops.recorridos||[]).find(r=>r.pedidoIds&&r.pedidoIds.includes(pid));
+    const cobro=(rec&&rec.cobros&&rec.cobros[pid])||p.cobro||p.pagoPrevio||{};
+
+    document.getElementById('entrega-det-title').textContent='ENTREGA — '+p.fecha;
+    let html='';
+
+    // Pedido info
+    html+='<div class="section" style="margin-bottom:10px;"><div style="padding:14px 16px;">'+
+      '<div class="fg2">'+
+        '<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);">FECHA PEDIDO</div><div style="font-weight:600;">'+p.fecha+'</div></div>'+
+        '<div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);">ESTADO</div><div style="font-weight:600;color:'+(p.estado==='cobrado'?'var(--green)':'var(--amber)')+';">'+(p.estado||'').toUpperCase()+'</div></div>'+
+      '</div>'+
+      (rec?'<div style="margin-top:10px;"><div style="font-family:var(--mono);font-size:9px;color:var(--text3);">CHOFER</div><div style="font-weight:600;">'+(rec.nombre||rec.chofer||'—').toUpperCase()+'</div></div>':'  ')+
+      (rec&&rec.salidaEn?'<div style="margin-top:6px;"><div style="font-family:var(--mono);font-size:9px;color:var(--text3);">SALIDA DEPÓSITO</div><div style="font-family:var(--mono);font-size:12px;">'+new Date(rec.salidaEn).toLocaleString('es-AR')+'</div></div>':'  ')+
+    '</div></div>';
+
+    // Productos
+    html+='<div class="section" style="margin-bottom:10px;"><div class="section-header"><div class="section-title">PRODUCTOS</div><div style="font-family:var(--display);font-size:20px;">'+fmt(p.total)+'</div></div>';
+    (p.productos||[]).forEach(pr=>{
+      html+='<div class="info-row">'+
+        '<div class="info-lbl"><span class="badge b-gray">'+pr.sku+'</span></div>'+
+        '<div class="info-val">'+pr.nombre+'</div>'+
+        '<div style="font-family:var(--mono);">'+pr.cant+' u · '+fmt(pr.precio)+'</div>'+
+      '</div>';
+    });
+    if(p.iva==='si') html+='<div style="padding:8px 16px;font-family:var(--mono);font-size:11px;color:var(--blue);">Con factura IVA 21% — CUIT: '+(p.cuit||'—')+'</div>';
+    html+='</div>';
+
+    // Cobro
+    if(cobro.monto||cobro.pagado){
+      html+='<div class="section"><div class="section-header"><div class="section-title">COBRO</div></div>'+
+        '<div class="info-row"><div class="info-lbl">Método</div><div class="info-val">'+(cobro.metodo||'—')+'</div></div>'+
+        '<div class="info-row"><div class="info-lbl">Monto</div><div class="info-val" style="color:var(--green);font-family:var(--mono);">'+fmt(cobro.monto||p.total)+'</div></div>'+
+        (cobro.referencia?'<div class="info-row"><div class="info-lbl">Referencia</div><div class="info-val" style="font-family:var(--mono);">'+cobro.referencia+'</div></div>':'')+
+        (cobro.caja?'<div class="info-row"><div class="info-lbl">Caja</div><div class="info-val">'+cobro.caja+'</div></div>':'')+
+      '</div>';
+    } else {
+      html+='<div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:8px;padding:12px;font-family:var(--mono);font-size:11px;color:var(--amber);">⏳ Pendiente de cobro</div>';
+    }
+
+    document.getElementById('entrega-det-body').innerHTML=html;
+    (document.getElementById('modal-entrega-detalle')||{classList:{remove:()=>{}}}).classList.remove('hidden');
+  }catch(e){ toast('Error al cargar detalle',true); }
+}
+
+// ============================================================
+// CLIENTE DE PRUEBA
+// ============================================================
+function cargarClientePrueba(){
+  const cid = 'prueba_toro_001';
+  function fa(dias){ const d=new Date(); d.setDate(d.getDate()-dias); return d.toISOString().split('T')[0]; }
+  let cl = JSON.parse(localStorage.getItem('fy_clientes')||'{"locales":[],"particulares":[]}');
+  if(!cl.locales) cl.locales=[];
+  cl.locales = cl.locales.filter(c=>c.id!==cid);
+  cl.locales.unshift({
+    id:cid, nombre:'PARRILLA EL TORO (PRUEBA)', tipo:'mayorista', tipoOriginal:'parrilla',
+    zona:'Tigre', telefono:'+5491155550000', horario:'10:00-13:00',
+    direccion:'Av. del Libertador 1234, Tigre', iva:'si', cuit:'20-12345678-9',
+    precioBase:'may', pago:'transferencia', deuda:65000, totalFact:485000,
+    ultimaCompra:fa(12), movimientos:[{id:'mv1',fecha:fa(12),tipo:'deuda',monto:65000,concepto:'B8 × 8, PA8 × 5'}],
+    creadoEn:fa(120)
+  });
+  localStorage.setItem('fy_clientes', JSON.stringify(cl));
+  let ops = JSON.parse(localStorage.getItem('fy_ops_v1')||'{"pedidos":[],"recorridos":[]}');
+  if(!ops.pedidos) ops.pedidos=[];
+  ops.pedidos = ops.pedidos.filter(p=>p.clienteId!==cid);
+  [{dias:110,prods:[{sku:'B8',nombre:'Bolsa 8kg',cant:8,precio:8300},{sku:'PA8',nombre:'Parrilla 8kg',cant:5,precio:7000}]},
+   {dias:82, prods:[{sku:'B8',nombre:'Bolsa 8kg',cant:10,precio:8300},{sku:'PA8',nombre:'Parrilla 8kg',cant:5,precio:7000}]},
+   {dias:55, prods:[{sku:'B8',nombre:'Bolsa 8kg',cant:8,precio:8300},{sku:'B4',nombre:'Bolsa 4kg',cant:6,precio:4000}]},
+   {dias:27, prods:[{sku:'B8',nombre:'Bolsa 8kg',cant:10,precio:8300},{sku:'PA8',nombre:'Parrilla 8kg',cant:8,precio:7000}]},
+   {dias:12, prods:[{sku:'B8',nombre:'Bolsa 8kg',cant:8,precio:8300},{sku:'PA8',nombre:'Parrilla 8kg',cant:5,precio:7000}]}
+  ].forEach(function(p,i){
+    const total=p.prods.reduce(function(s,pr){ return s+pr.cant*pr.precio; },0);
+    ops.pedidos.push({id:'ped_p'+i,clienteId:cid,clienteNombre:'PARRILLA EL TORO (PRUEBA)',
+      fecha:fa(p.dias),productos:p.prods,total:total,totalNeto:Math.round(total/1.21),
+      iva:'si',cuit:'20-12345678-9',estado:i<4?'cobrado':'entregado',cobradoCompleto:i<4,
+      cobro:i<4?{monto:total,metodo:'transferencia',caja:'financiera',referencia:'REF'+i}:null});
+  });
+  localStorage.setItem('fy_ops_v1', JSON.stringify(ops));
+  loadClientes(); renderLista(); verCliente(cid);
+  toast('✓ Cliente de prueba cargado — buscá "El Toro"');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadClientes();
+renderZonaBar();
+renderLista();
+</script>
+</body>
+</html>
